@@ -1,0 +1,58 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies
+node_modules
+vendor
+
+# Build outputs
+public/build
+public/hot
+
+# Environment and configuration
+.env*
+!.env.example
+
+# Development files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Laravel specific
+storage/app/*
+!storage/app/.gitignore
+!storage/app/public
+storage/framework/cache/*
+!storage/framework/cache/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+storage/logs/*
+!storage/logs/.gitignore
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
+# Testing
+phpunit.xml
+.phpunit.result.cache
+tests
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database
+database/database.sqlite

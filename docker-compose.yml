@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8080:80"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      - APP_URL=http://localhost:8080
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=emerst
+      - DB_USERNAME=emerst
+      - DB_PASSWORD=emerst_password
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SEED_DATABASE=true
+      - ADMIN_EMAIL=admin@emerst.com
+      - ADMIN_PASSWORD=admin123
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - storage_data:/var/www/html/storage/app
+    networks:
+      - emerst_network
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: emerst
+      MYSQL_USER: emerst
+      MYSQL_PASSWORD: emerst_password
+      MYSQL_ROOT_PASSWORD: root_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - emerst_network
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - emerst_network
+
+volumes:
+  mysql_data:
+  redis_data:
+  storage_data:
+
+networks:
+  emerst_network:
+    driver: bridge
