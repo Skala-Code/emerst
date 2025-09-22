@@ -8,7 +8,7 @@
   <article>
     <x-hero :title="$post->title">
       @slot('afterTitle')
-        <div>Posted by {{ $post->user->name }}</div>
+        <div>Publicado por {{ $post->user->name }}</div>
 
         <div
           class="inline-flex items-center text-xs cursor-help"
