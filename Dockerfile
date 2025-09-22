@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install npm dependencies (including dev dependencies for build)
-RUN npm ci
+# Use npm ci if lock file is in sync, otherwise fall back to npm install
+RUN npm ci || (echo "Lock file out of sync, using npm install" && npm install)
 
 # Copy source code
 COPY . .
