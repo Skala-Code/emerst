@@ -57,7 +57,7 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist --no-scripts
 
 # Frontend build stage
 FROM node:20-alpine AS frontend
@@ -151,6 +151,9 @@ RUN mkdir -p storage/logs \
     && mkdir -p storage/framework/views \
     && mkdir -p storage/app/temp \
     && mkdir -p bootstrap/cache
+
+# Run composer scripts now that artisan is available
+RUN php artisan package:discover --ansi
 
 # Copy configuration files
 COPY docker/nginx.conf /etc/nginx/nginx.conf

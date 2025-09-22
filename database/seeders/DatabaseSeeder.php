@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Post;
 use App\Models\User;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,20 +14,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::factory()->create([
-            'name' => 'admin',
-            'email' => 'admin@admin.test',
-            'password' => Hash::make('admin'),
+        // Create roles
+        Role::firstOrCreate(['name' => 'super_admin']);
+        Role::firstOrCreate(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'advogado']);
+        Role::firstOrCreate(['name' => 'colaborador']);
+
+        // Create super admin user
+        $user = User::create([
+            'name' => 'Super Admin',
+            'email' => 'admin@emerst.com',
+            'password' => Hash::make('admin123'),
         ]);
+        $user->assignRole('super_admin');
 
-        Post::factory()
-            ->count(25)
-            ->create();
-
-        Notification::make()
-            ->title('Welcome to Filament')
-            ->body('You are ready to start building your application.')
-            ->success()
-            ->sendToDatabase($user);
+        // Run our deadline management seeder
+        $this->call([
+            DeadlineManagementSeeder::class,
+        ]);
     }
 }

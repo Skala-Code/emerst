@@ -45,11 +45,11 @@ Ou gere online: `base64:` + uma string de 32 caracteres aleatórios
 **Banco de Dados:**
 ```
 DB_CONNECTION=mysql
-DB_HOST=seu-host-mysql
+DB_HOST=emerst_banco
 DB_PORT=3306
 DB_DATABASE=emerst
-DB_USERNAME=seu-usuario
-DB_PASSWORD=sua-senha
+DB_USERNAME=emerst
+DB_PASSWORD=Lucas@2204
 ```
 
 **Sessão e Cache:**
