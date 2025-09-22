@@ -43,12 +43,21 @@ mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p storage/app/temp
 mkdir -p bootstrap/cache
+mkdir -p public/build
+
+# Ensure public directory structure
+if [ ! -f public/index.php ]; then
+    echo "ERROR: public/index.php not found! Laravel public directory structure is incorrect."
+    exit 1
+fi
 
 # Set proper permissions
 chown -R www-data:www-data /var/www/html/storage
 chown -R www-data:www-data /var/www/html/bootstrap/cache
+chown -R www-data:www-data /var/www/html/public
 chmod -R 755 /var/www/html/storage
 chmod -R 755 /var/www/html/bootstrap/cache
+chmod -R 755 /var/www/html/public
 
 # Create SQLite database if using SQLite
 if [ "$DB_CONNECTION" = "sqlite" ]; then
@@ -109,6 +118,18 @@ if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
 fi
 
 echo "Laravel application initialization completed!"
+
+# Verify nginx configuration
+echo "Testing nginx configuration..."
+nginx -t
+
+# Show Laravel app info
+echo "Laravel application info:"
+echo "- App URL: $APP_URL"
+echo "- Environment: $APP_ENV"
+echo "- Database: $DB_CONNECTION"
+echo "- Public directory: /var/www/html/public"
+echo "- Index file exists: $([ -f /var/www/html/public/index.php ] && echo 'YES' || echo 'NO')"
 
 # Execute the main command
 exec "$@"

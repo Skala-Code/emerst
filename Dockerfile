@@ -10,14 +10,27 @@ RUN apk add --no-cache \
     zip \
     unzip \
     oniguruma-dev \
-    libzip-dev
+    libzip-dev \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    icu-dev
 
-# Install minimal PHP extensions needed for composer
-RUN docker-php-ext-install \
+# Install all PHP extensions needed for composer
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
     pdo \
+    pdo_mysql \
+    pdo_sqlite \
     mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
     zip \
-    xml
+    xml \
+    soap \
+    intl \
+    opcache
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -66,6 +79,7 @@ RUN apk add --no-cache \
     libzip-dev \
     freetype-dev \
     libjpeg-turbo-dev \
+    icu-dev \
     sqlite \
     sqlite-dev \
     nginx \
