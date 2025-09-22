@@ -47,7 +47,7 @@ tests
 
 # Documentation
 README.md
-*.md
+DEPLOYMENT.md
 docs/
 
 # Temporary files

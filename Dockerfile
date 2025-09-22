@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install npm dependencies
-RUN if [ -f package-lock.json ]; then npm ci --production=false; else npm install; fi
+# Install npm dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy source code
 COPY . .
