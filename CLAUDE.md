@@ -84,3 +84,4 @@ This is a Laravel 12 application using the TALL stack (Tailwind CSS, Alpine.js, 
 - URL: `/admin`
 - Default credentials: `admin` / `admin` (created by seeder)
 - Features full CRUD for Posts, Users, and system monitoring
+- sempre que fizer um push faca um curl para http://24.152.38.77:3000/api/deploy/8d6d4940a47282ae2effcb92feefff6fc4fb35ad8bfe9129

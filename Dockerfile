@@ -157,8 +157,10 @@ RUN mkdir -p storage/logs \
     && mkdir -p storage/app/temp \
     && mkdir -p bootstrap/cache
 
-# Run composer scripts now that artisan is available
-RUN php artisan package:discover --ansi
+# Clear any existing cache and run composer scripts
+RUN php artisan config:clear || true && \
+    php artisan cache:clear || true && \
+    php artisan package:discover --ansi
 
 # Copy configuration files
 COPY docker/nginx.conf /etc/nginx/nginx.conf
