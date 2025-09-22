@@ -13,105 +13,95 @@ use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
-    /**
-     * The resource model.
-     */
     protected static ?string $model = User::class;
 
-    /**
-     * The resource navigation icon.
-     */
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    /**
-     * The settings navigation group.
-     */
-    protected static ?string $navigationGroup = 'Collections';
+    protected static ?string $navigationLabel = 'Usuários';
 
-    /**
-     * The settings navigation sort order.
-     */
-    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationGroup = 'Administração';
 
-    /**
-     * Get the navigation badge for the resource.
-     */
-    public static function getNavigationBadge(): ?string
+    public static function canViewAny(): bool
     {
-        return number_format(static::getModel()::count());
+        return auth()->user()?->hasPermissionTo('view_users') ?? false;
     }
 
-    /**
-     * The resource form.
-     */
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label('Nome')
                     ->required()
-                    ->unique(ignoreRecord: true)
                     ->maxLength(255),
-
                 Forms\Components\TextInput::make('email')
+                    ->label('E-mail')
                     ->email()
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
-
                 Forms\Components\TextInput::make('password')
+                    ->label('Senha')
+                    ->password()
+                    ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
                     ->dehydrated(fn (?string $state): bool => filled($state))
-                    ->required(fn (string $operation): bool => $operation === 'create')
-                    ->password()
-                    ->confirmed()
                     ->maxLength(255),
-
-                Forms\Components\TextInput::make('password_confirmation')
-                    ->label('Confirm password')
-                    ->password()
-                    ->required(fn (string $operation): bool => $operation === 'create')
-                    ->maxLength(255),
+                Forms\Components\Select::make('roles')
+                    ->label('Roles')
+                    ->relationship('roles', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->searchable(),
             ]);
     }
 
-    /**
-     * The resource table.
-     */
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-
+                    ->label('Nome')
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('created_at')
+                    ->label('E-mail')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Roles')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'super-admin' => 'danger',
+                        'admin' => 'warning',
+                        'advogado' => 'success',
+                        'colaborador' => 'info',
+                        'cliente' => 'gray',
+                        default => 'primary',
+                    }),
+                Tables\Columns\TextColumn::make('email_verified_at')
+                    ->label('E-mail Verificado')
                     ->dateTime()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->emptyStateActions([
-                Tables\Actions\CreateAction::make(),
             ]);
     }
 
-    /**
-     * The resource relation managers.
-     */
     public static function getRelations(): array
     {
         return [
@@ -119,13 +109,12 @@ class UserResource extends Resource
         ];
     }
 
-    /**
-     * The resource pages.
-     */
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListUsers::route('/'),
+            'create' => Pages\CreateUser::route('/create'),
+            'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }

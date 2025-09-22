@@ -69,6 +69,11 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('/favicon-32x32.png'))
             ->brandLogo(fn () => view('components.logo'))
             ->navigationGroups([
+                'Gestão',
+                'Processos',
+                'Administração',
+                'Documentos',
+                'Configurações',
                 'Collections',
                 'Media',
                 'Settings',

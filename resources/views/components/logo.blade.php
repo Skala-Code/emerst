@@ -1,3 +1,1 @@
-<div class="text-xl">
-  Filament <span class="text-primary-500 font-medium">Starter</span>
-</div>
+<img src="{{ asset('images/logo.png') }}" alt="Emerst" class="h-8 w-auto">
