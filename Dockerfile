@@ -13,23 +13,38 @@ RUN apk add --no-cache \
     libzip-dev \
     freetype-dev \
     libjpeg-turbo-dev \
-    icu-dev
+    icu-dev \
+    sqlite-dev \
+    sqlite \
+    mysql-dev \
+    autoconf \
+    make \
+    g++
 
-# Install all PHP extensions needed for composer
+# Install PHP extensions needed for composer
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
+    && docker-php-ext-install -j$(nproc) \
     pdo \
-    pdo_mysql \
-    pdo_sqlite \
     mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
     zip \
     xml \
-    soap \
+    bcmath
+
+# Install database extensions
+RUN docker-php-ext-install -j$(nproc) \
+    pdo_mysql \
+    pdo_sqlite
+
+# Install graphics and internationalization extensions
+RUN docker-php-ext-install -j$(nproc) \
+    gd \
     intl \
+    exif
+
+# Install remaining extensions
+RUN docker-php-ext-install -j$(nproc) \
+    pcntl \
+    soap \
     opcache
 
 # Install composer
@@ -82,24 +97,28 @@ RUN apk add --no-cache \
     icu-dev \
     sqlite \
     sqlite-dev \
+    mysql-dev \
+    autoconf \
+    make \
+    g++ \
     nginx \
     supervisor
 
-# Install PHP extensions
+# Install PHP extensions (simplified to match composer stage)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
+    && docker-php-ext-install -j$(nproc) \
     pdo \
-    pdo_mysql \
-    pdo_sqlite \
     mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    gd \
     zip \
     xml \
-    soap \
+    bcmath \
+    pdo_mysql \
+    pdo_sqlite \
+    gd \
     intl \
+    exif \
+    pcntl \
+    soap \
     opcache
 
 # Install Composer
