@@ -26,15 +26,21 @@ Este guia detalha como implantar o sistema Emerst no Easypanel.
 
 No painel do Easypanel, adicione as seguintes variáveis de ambiente (baseadas no arquivo `.env.easypanel`):
 
-**Aplicação:**
+**Aplicação (OBRIGATÓRIO):**
 ```
 APP_NAME=Emerst - Sistema de Gestão de Prazos
 APP_ENV=production
-APP_KEY=base64:GERE_COM_php_artisan_key:generate
+APP_KEY=base64:SuaChaveGeradaAquiDe32Caracteres==
 APP_DEBUG=false
 APP_URL=https://seu-dominio.com
 APP_TIMEZONE=America/Sao_Paulo
 ```
+
+**⚠️ IMPORTANTE: Para gerar a APP_KEY, use:**
+```bash
+php artisan key:generate --show
+```
+Ou gere online: `base64:` + uma string de 32 caracteres aleatórios
 
 **Banco de Dados:**
 ```
@@ -46,7 +52,21 @@ DB_USERNAME=seu-usuario
 DB_PASSWORD=sua-senha
 ```
 
-**Cache e Sessão:**
+**Sessão e Cache:**
+```
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=
+SESSION_CONNECTION=
+SESSION_STORE=
+SESSION_SECURE_COOKIE=false
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+```
+
+**Se usar Redis (opcional):**
 ```
 CACHE_STORE=redis
 SESSION_DRIVER=redis
