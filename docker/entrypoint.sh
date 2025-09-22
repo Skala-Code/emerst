@@ -45,6 +45,9 @@ mkdir -p storage/app/temp
 mkdir -p bootstrap/cache
 mkdir -p public/build
 
+# Create supervisor log directory
+mkdir -p /var/log/supervisor
+
 # Ensure public directory structure
 if [ ! -f public/index.php ]; then
     echo "ERROR: public/index.php not found! Laravel public directory structure is incorrect."
