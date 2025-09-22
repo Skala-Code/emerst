@@ -139,7 +139,9 @@ COPY . .
 COPY --from=composer /app/vendor ./vendor
 
 # Copy built frontend assets from frontend stage
-COPY --from=frontend /app/public/build ./public/build || mkdir -p ./public/build
+COPY --from=frontend /app/public/build ./public/build
+
+# Verify build assets were copied
 RUN ls -la public/build/ || echo "No build assets found"
 
 # Set proper permissions
