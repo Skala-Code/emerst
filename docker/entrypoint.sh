@@ -5,6 +5,19 @@ set -e
 
 echo "Starting Laravel application initialization..."
 
+# Set default environment variables if not provided
+export APP_ENV=${APP_ENV:-production}
+export APP_DEBUG=${APP_DEBUG:-false}
+export APP_URL=${APP_URL:-http://localhost}
+export DB_CONNECTION=${DB_CONNECTION:-sqlite}
+export SESSION_DRIVER=${SESSION_DRIVER:-file}
+export SESSION_CONNECTION=${SESSION_CONNECTION:-}
+export SESSION_STORE=${SESSION_STORE:-}
+export SESSION_DOMAIN=${SESSION_DOMAIN:-}
+export SESSION_SECURE_COOKIE=${SESSION_SECURE_COOKIE:-false}
+export CACHE_DRIVER=${CACHE_DRIVER:-file}
+export QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}
+
 # Wait for database to be ready (if using external database)
 if [ "$DB_CONNECTION" = "mysql" ] || [ "$DB_CONNECTION" = "pgsql" ]; then
     echo "Waiting for database connection..."
