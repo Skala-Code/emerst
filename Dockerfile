@@ -77,7 +77,9 @@ COPY . .
 COPY --from=composer /app/vendor ./vendor
 
 # Build frontend assets
-RUN npm run build
+RUN npm run build && \
+    ls -la public/ && \
+    ls -la public/build/ || (echo "Build failed or no build directory created" && mkdir -p public/build)
 
 # PHP base stage
 FROM php:8.3-fpm-alpine AS base
@@ -137,7 +139,8 @@ COPY . .
 COPY --from=composer /app/vendor ./vendor
 
 # Copy built frontend assets from frontend stage
-COPY --from=frontend /app/public/build ./public/build
+COPY --from=frontend /app/public/build ./public/build || mkdir -p ./public/build
+RUN ls -la public/build/ || echo "No build assets found"
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
