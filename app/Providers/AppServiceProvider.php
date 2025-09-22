@@ -34,11 +34,13 @@ class AppServiceProvider extends ServiceProvider
         // Configure Livewire for production
         if (config('app.env') === 'production') {
             Livewire::setUpdateRoute(function ($handle) {
-                return Route::post('/livewire/update', $handle);
+                return Route::post('/livewire/update', $handle)
+                    ->middleware(['web']);
             });
 
             Livewire::setScriptRoute(function ($handle) {
-                return Route::get('/livewire/livewire.js', $handle);
+                return Route::get('/livewire/livewire.js', $handle)
+                    ->middleware(['web']);
             });
         }
     }
