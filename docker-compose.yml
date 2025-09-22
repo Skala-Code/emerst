@@ -11,25 +11,23 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
-      - APP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      - APP_KEY=base64:0UXaAaQOKWecDTCJ9gpjDOARrVsE/kD9HCGh7HlKL1g=
       - APP_URL=http://localhost:8080
-      - DB_CONNECTION=mysql
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_DATABASE=emerst
-      - DB_USERNAME=emerst
-      - DB_PASSWORD=emerst_password
-      - CACHE_DRIVER=redis
-      - SESSION_DRIVER=redis
-      - QUEUE_CONNECTION=redis
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      - DB_CONNECTION=sqlite
+      - SESSION_DRIVER=file
+      - SESSION_LIFETIME=120
+      - SESSION_ENCRYPT=false
+      - SESSION_PATH=/
+      - SESSION_DOMAIN=
+      - SESSION_CONNECTION=
+      - SESSION_STORE=
+      - SESSION_SECURE_COOKIE=false
+      - CACHE_STORE=file
+      - QUEUE_CONNECTION=sync
       - SEED_DATABASE=true
       - ADMIN_EMAIL=admin@emerst.com
       - ADMIN_PASSWORD=admin123
-    depends_on:
-      - mysql
-      - redis
+    # No dependencies needed for SQLite setup
     volumes:
       - storage_data:/var/www/html/storage/app
     networks:

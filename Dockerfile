@@ -1,4 +1,37 @@
 # Multi-stage build for Laravel 12 + Filament application
+FROM php:8.3-fpm-alpine AS composer
+
+# Install system dependencies needed for composer
+RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    oniguruma-dev \
+    libzip-dev
+
+# Install minimal PHP extensions needed for composer
+RUN docker-php-ext-install \
+    pdo \
+    mbstring \
+    zip \
+    xml
+
+# Install composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /app
+
+# Copy composer files
+COPY composer.json composer.lock ./
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
+
+# Frontend build stage
 FROM node:20-alpine AS frontend
 
 # Set working directory
@@ -11,8 +44,9 @@ COPY package*.json ./
 # Use npm ci if lock file is in sync, otherwise fall back to npm install
 RUN npm ci || (echo "Lock file out of sync, using npm install" && npm install)
 
-# Copy source code
+# Copy source code and vendor dependencies
 COPY . .
+COPY --from=composer /app/vendor ./vendor
 
 # Build frontend assets
 RUN npm run build
@@ -60,17 +94,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files
-COPY composer.json composer.lock ./
-
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress --prefer-dist
-
 # Production stage
 FROM base AS production
 
 # Copy application code
 COPY . .
+
+# Copy vendor dependencies from composer stage
+COPY --from=composer /app/vendor ./vendor
 
 # Copy built frontend assets from frontend stage
 COPY --from=frontend /app/public/build ./public/build
