@@ -27,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
         // Force HTTPS URLs in production
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
+
+            // Force HTTPS for asset URLs
+            \Illuminate\Support\Facades\Asset::alwaysFrom(config('app.url'));
         }
     }
 }

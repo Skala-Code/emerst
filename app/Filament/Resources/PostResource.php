@@ -36,7 +36,7 @@ class PostResource extends Resource
     /**
      * The resource navigation group.
      */
-    protected static ?string $navigationGroup = 'Collections';
+    protected static ?string $navigationGroup = 'Coleções';
 
     /**
      * The resource navigation sort order.
@@ -65,7 +65,7 @@ class PostResource extends Resource
                             ->columnSpan(2)
                             ->schema([
                                 Forms\Components\TextInput::make('title')
-                                    ->placeholder('Enter a title')
+                                    ->placeholder('Digite um título')
                                     ->live()
                                     ->afterStateUpdated(function (Get $get, Set $set, string $operation, ?string $old, ?string $state) {
                                         if (($get('slug') ?? '') !== Str::slug($old) || $operation !== 'create') {
@@ -97,16 +97,16 @@ class PostResource extends Resource
                                                     ->required(),
 
                                                 Forms\Components\Fieldset::make()
-                                                    ->label('Details')
+                                                    ->label('Detalhes')
                                                     ->schema([
                                                         Forms\Components\TextInput::make('alt')
-                                                            ->label('Alt Text')
-                                                            ->placeholder('Enter alt text')
+                                                            ->label('Texto Alternativo')
+                                                            ->placeholder('Digite o texto alternativo')
                                                             ->required()
                                                             ->maxLength(255),
 
                                                         Forms\Components\TextInput::make('caption')
-                                                            ->placeholder('Enter a caption')
+                                                            ->placeholder('Digite uma legenda')
                                                             ->maxLength(255),
                                                     ]),
 
@@ -118,29 +118,29 @@ class PostResource extends Resource
                             ->columnSpan(1)
                             ->schema([
                                 Forms\Components\TextInput::make('slug')
-                                    ->placeholder('Enter a slug')
+                                    ->placeholder('Digite um slug')
                                     ->alphaDash()
                                     ->required()
                                     ->unique(ignoreRecord: true)
                                     ->maxLength(255),
 
                                 Forms\Components\Select::make('user_id')
-                                    ->label('Author')
+                                    ->label('Autor')
                                     ->relationship('user', 'name')
                                     ->default(fn () => auth()->id())
                                     ->searchable()
                                     ->required(),
 
                                 CuratorPicker::make('image_id')
-                                    ->label('Featured Image'),
+                                    ->label('Imagem Destacada'),
 
                                 Forms\Components\DatePicker::make('published_at')
-                                    ->label('Publish Date')
+                                    ->label('Data de Publicação')
                                     ->default(now())
                                     ->required(),
 
                                 Forms\Components\Toggle::make('is_published')
-                                    ->label('Published')
+                                    ->label('Publicado')
                                     ->required(),
                             ]),
                     ]),
@@ -163,12 +163,12 @@ class PostResource extends Resource
                     ->size(32),
 
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('Author')
+                    ->label('Autor')
                     ->badge()
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_published')
-                    ->label('Published')
+                    ->label('Publicado')
                     ->boolean()
                     ->sortable(),
 
