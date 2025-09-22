@@ -161,7 +161,7 @@ RUN mkdir -p storage/logs \
 RUN php artisan config:clear || true && \
     php artisan cache:clear || true && \
     php artisan package:discover --ansi && \
-    php artisan livewire:publish --assets --force
+    php artisan livewire:publish --assets
 
 # Copy configuration files
 COPY docker/nginx.conf /etc/nginx/nginx.conf
