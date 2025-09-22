@@ -134,5 +134,11 @@ echo "- Database: $DB_CONNECTION"
 echo "- Public directory: /var/www/html/public"
 echo "- Index file exists: $([ -f /var/www/html/public/index.php ] && echo 'YES' || echo 'NO')"
 
-# Execute the main command
-exec "$@"
+# Check if we're being called with supervisord
+if [ "$1" = "/usr/bin/supervisord" ]; then
+    echo "Starting supervisord..."
+    exec "$@"
+else
+    echo "Starting with command: $@"
+    exec "$@"
+fi
