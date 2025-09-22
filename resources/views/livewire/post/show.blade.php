@@ -49,7 +49,7 @@
         <div class="pt-4 mt-4 border-t">
           <a class="inline-flex items-center text-sm text-primary-500 hover:text-primary-600" href="{{ $post->editUrl }}">
             <x-heroicon-s-pencil class="inline-block w-3 h-3 mr-2" />
-            Edit post
+            Editar post
           </a>
         </div>
       @endif
