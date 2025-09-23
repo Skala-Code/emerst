@@ -44,12 +44,22 @@ class LawyerResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('office_id')
-                    ->label('Escritório')
-                    ->relationship('office', 'name')
+                Forms\Components\Select::make('companies')
+                    ->label('Empresas')
+                    ->relationship('companies', 'name')
+                    ->multiple()
                     ->required()
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->helperText('Selecione uma ou mais empresas que este advogado atende'),
+
+                Forms\Components\Select::make('offices')
+                    ->label('Escritórios')
+                    ->relationship('offices', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->helperText('Selecione um ou mais escritórios onde este advogado trabalha'),
                 Forms\Components\TextInput::make('name')
                     ->label('Nome')
                     ->required()
@@ -75,10 +85,19 @@ class LawyerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('office.name')
-                    ->label('Escritório')
+                Tables\Columns\TextColumn::make('companies.name')
+                    ->label('Empresas')
                     ->searchable()
-                    ->sortable(),
+                    ->formatStateUsing(fn ($record) =>
+                        $record->companies->pluck('name')->join(', ')
+                    ),
+
+                Tables\Columns\TextColumn::make('offices.name')
+                    ->label('Escritórios')
+                    ->searchable()
+                    ->formatStateUsing(fn ($record) =>
+                        $record->offices->pluck('name')->join(', ')
+                    ),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nome')
                     ->searchable()

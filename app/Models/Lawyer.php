@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Lawyer extends Model
 {
@@ -22,11 +23,7 @@ class Lawyer extends Model
         'active' => 'boolean',
     ];
 
-    public function office(): BelongsTo
-    {
-        return $this->belongsTo(Office::class);
-    }
-
+    // Manter relacionamentos diretos para processos e ordens de serviço
     public function processes(): HasMany
     {
         return $this->hasMany(Process::class);
@@ -40,5 +37,19 @@ class Lawyer extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    // Relacionamento many-to-many com empresas
+    public function companies(): BelongsToMany
+    {
+        return $this->belongsToMany(Company::class, 'company_lawyer')
+                    ->withTimestamps();
+    }
+
+    // Relacionamento many-to-many com escritórios
+    public function offices(): BelongsToMany
+    {
+        return $this->belongsToMany(Office::class, 'lawyer_office')
+                    ->withTimestamps();
     }
 }

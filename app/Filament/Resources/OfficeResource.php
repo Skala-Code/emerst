@@ -44,12 +44,14 @@ class OfficeResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('company_id')
-                    ->label('Empresa')
-                    ->relationship('company', 'name')
+                Forms\Components\Select::make('companies')
+                    ->label('Empresas')
+                    ->relationship('companies', 'name')
+                    ->multiple()
                     ->required()
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->helperText('Selecione uma ou mais empresas que este escritório atende'),
                 Forms\Components\TextInput::make('name')
                     ->label('Nome')
                     ->required()
@@ -74,10 +76,13 @@ class OfficeResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('company.name')
-                    ->label('Empresa')
+                Tables\Columns\TextColumn::make('companies.name')
+                    ->label('Empresas')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(fn ($record) =>
+                        $record->companies->pluck('name')->join(', ')
+                    ),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nome')
                     ->searchable()
