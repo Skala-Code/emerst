@@ -516,7 +516,82 @@ class ProcessResource extends Resource
                 ])
                 ->columns(2),
 
-            // === SEÇÃO 12: CAMPOS PERSONALIZADOS ===
+            // === SEÇÃO 12: TIMELINE DO PROCESSO ===
+            Forms\Components\Section::make('Timeline do Processo')
+                ->schema([
+                    Forms\Components\Repeater::make('timeline')
+                        ->relationship('timeline')
+                        ->label('Eventos da Timeline')
+                        ->schema([
+                            Forms\Components\DatePicker::make('event_date')
+                                ->label('Data do Evento')
+                                ->required()
+                                ->displayFormat('d/m/Y')
+                                ->columnSpan(1),
+                            Forms\Components\TimePicker::make('event_time')
+                                ->label('Horário')
+                                ->displayFormat('H:i')
+                                ->columnSpan(1),
+                            Forms\Components\Select::make('event_type')
+                                ->label('Tipo de Evento')
+                                ->options([
+                                    'Juntada' => 'Juntada',
+                                    'Publicado' => 'Publicado',
+                                    'Disponibilizado' => 'Disponibilizado',
+                                    'Expedido' => 'Expedido',
+                                    'Despacho' => 'Despacho',
+                                    'Decisão' => 'Decisão',
+                                    'Acórdão' => 'Acórdão',
+                                    'Conclusos' => 'Conclusos',
+                                    'Iniciada' => 'Iniciada',
+                                    'Homologada' => 'Homologada',
+                                    'Proferido' => 'Proferido',
+                                    'Decorrido' => 'Decorrido',
+                                    'Transitado' => 'Transitado',
+                                    'Recebidos' => 'Recebidos',
+                                    'Outros' => 'Outros',
+                                ])
+                                ->searchable()
+                                ->required()
+                                ->columnSpan(1),
+                            Forms\Components\Textarea::make('description')
+                                ->label('Descrição do Evento')
+                                ->required()
+                                ->rows(2)
+                                ->placeholder('Ex: Juntada a petição de Contraminuta')
+                                ->columnSpan(3),
+                            Forms\Components\TextInput::make('reference_number')
+                                ->label('Número de Referência')
+                                ->placeholder('Ex: c35e8fb')
+                                ->maxLength(50)
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('responsible_party')
+                                ->label('Responsável/Interessado')
+                                ->placeholder('Ex: JOAO BATISTA KIELING COSTA')
+                                ->maxLength(255)
+                                ->columnSpan(2),
+                            Forms\Components\TextInput::make('order')
+                                ->label('Ordem')
+                                ->numeric()
+                                ->default(0)
+                                ->columnSpan(1),
+                        ])
+                        ->columns(3)
+                        ->defaultItems(0)
+                        ->addActionLabel('Adicionar Evento')
+                        ->reorderable('order')
+                        ->collapsible()
+                        ->itemLabel(fn (array $state): ?string =>
+                            ($state['event_date'] ?? '') . ' - ' . ($state['event_type'] ?? '') . ': ' .
+                            (isset($state['description']) ? \Str::limit($state['description'], 50) : '')
+                        )
+                        ->columnSpanFull(),
+                ])
+                ->collapsed()
+                ->description('Timeline detalhada dos eventos e movimentações do processo')
+                ->columns(1),
+
+            // === SEÇÃO 13: CAMPOS PERSONALIZADOS ===
             ...CustomFieldService::getCustomFieldsForModel('process'),
         ]);
     }

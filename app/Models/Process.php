@@ -156,4 +156,9 @@ class Process extends Model
     {
         return $this->hasMany(ProcessParty::class)->where('party_type', 'interested');
     }
+
+    public function timeline(): HasMany
+    {
+        return $this->hasMany(ProcessTimeline::class)->orderBy('event_date', 'desc')->orderBy('order', 'asc');
+    }
 }
