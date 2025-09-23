@@ -10,7 +10,6 @@ class ProcessTimeline extends Model
     protected $fillable = [
         'process_id',
         'event_date',
-        'event_time',
         'event_type',
         'description',
         'reference_number',
@@ -20,7 +19,6 @@ class ProcessTimeline extends Model
 
     protected $casts = [
         'event_date' => 'datetime',
-        'event_time' => 'datetime:H:i',
     ];
 
     public function process(): BelongsTo
@@ -35,10 +33,6 @@ class ProcessTimeline extends Model
 
     public function getFormattedTimeAttribute(): string
     {
-        if ($this->event_time) {
-            return $this->event_time->format('H:i');
-        }
-
         return $this->event_date->format('H:i');
     }
 }
