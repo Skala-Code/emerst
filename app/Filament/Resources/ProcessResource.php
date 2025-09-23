@@ -516,7 +516,7 @@ class ProcessResource extends Resource
                 ])
                 ->columns(2),
 
-            // === SEÇÃO 12: TIMELINE DO PROCESSO ===
+            /*// === SEÇÃO 12: TIMELINE DO PROCESSO ===
             Forms\Components\Section::make('Timeline do Processo')
                 ->schema([
                     Forms\Components\Repeater::make('timeline')
@@ -589,7 +589,7 @@ class ProcessResource extends Resource
                 ])
                 ->collapsed()
                 ->description('Timeline detalhada dos eventos e movimentações do processo')
-                ->columns(1),
+                ->columns(1),*/
 
             // === SEÇÃO 13: CAMPOS PERSONALIZADOS ===
             ...CustomFieldService::getCustomFieldsForModel('process'),
