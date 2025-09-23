@@ -638,6 +638,7 @@ class ProcessResource extends Resource
         return [
             'index' => Pages\ListProcesses::route('/'),
             'create' => Pages\CreateProcess::route('/create'),
+            'view' => Pages\ViewProcess::route('/{record}'),
             'edit' => Pages\EditProcess::route('/{record}/edit'),
         ];
     }
@@ -645,5 +646,173 @@ class ProcessResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
+    }
+                        ->displayFormat('d/m/Y H:i'),
+                    Forms\Components\DateTimePicker::make('filed_at')
+                        ->label('Data de Autuação')
+                        ->displayFormat('d/m/Y H:i'),
+                    Forms\Components\TextInput::make('case_value')
+                        ->label('Valor da Causa')
+                        ->numeric()
+                        ->step(0.01)
+                        ->prefix('R$'),
+                    Forms\Components\Toggle::make('free_justice_granted')
+                        ->label('Processo com Justiça Gratuita Deferida')
+                        ->default(false),
+                ])
+                ->columns(3),
+
+            // === SEÇÃO 13: CLASSIFICAÇÃO E ASSUNTOS ===
+            Forms\Components\Section::make('Classificação e Assuntos')
+                ->schema([
+                    Forms\Components\Select::make('process_class')
+                        ->label('Classe do Processo')
+                        ->options([
+                            'reclamacao_trabalhista' => 'Reclamação Trabalhista',
+                            'acao_cautelar' => 'Ação Cautelar',
+                            'acao_rescisoria' => 'Ação Rescisória',
+                            'mandado_seguranca' => 'Mandado de Segurança',
+                            'habeas_corpus' => 'Habeas Corpus',
+                            'embargos_execucao' => 'Embargos à Execução',
+                            'execucao' => 'Execução',
+                            'outros' => 'Outros'
+                        ])
+                        ->searchable(),
+                    Forms\Components\CheckboxList::make('subjects')
+                        ->label('Assuntos do Processo')
+                        ->options([
+                            'horas_extras' => 'Horas Extras',
+                            'adicional_hora_extra' => 'Adicional de Hora Extra',
+                            'aviso_previo' => 'Aviso Prévio',
+                            'base_calculo' => 'Base de Cálculo',
+                            'ctps' => 'CTPS',
+                            'honorarios_justica_trabalho' => 'Honorários na Justiça do Trabalho',
+                            'indenizacao_dano_material' => 'Indenização por Dano Material',
+                            'indenizacao_dano_moral' => 'Indenização por Dano Moral',
+                            'intervalo_interjornadas' => 'Intervalo Interjornadas',
+                            'intervalo_intrajornada' => 'Intervalo Intrajornada',
+                            'repouso_semanal' => 'Repouso Semanal Remunerado e Feriado',
+                            'salario_natura' => 'Salário in Natura',
+                            'verbas_rescissorias' => 'Verbas Rescisórias',
+                            'fgts' => 'FGTS',
+                            'seguro_desemprego' => 'Seguro Desemprego',
+                            'adicional_periculosidade' => 'Adicional de Periculosidade',
+                            'adicional_insalubridade' => 'Adicional de Insalubridade',
+                            'estabilidade' => 'Estabilidade',
+                            'multa_artigo_467' => 'Multa do Artigo 467',
+                            'multa_artigo_477' => 'Multa do Artigo 477',
+                        ])
+                        ->columns(3)
+                        ->searchable(),
+                ])
+                ->columns(1),
+
+            // === SEÇÃO 14: CAMPOS PERSONALIZADOS ===
+            ...CustomFieldService::getCustomFieldsForModel('process'),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('company.name')
+                    ->label('Empresa')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('office.name')
+                    ->label('Escritório')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('number')
+                    ->label('Número')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Título')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('lawyer.name')
+                    ->label('Advogado')
+                    ->searchable(),
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status')
+                    ->colors([
+                        'success' => 'active',
+                        'warning' => 'suspended',
+                        'secondary' => 'archived',
+                        'primary' => 'completed',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'active' => 'Ativo',
+                        'suspended' => 'Suspenso',
+                        'archived' => 'Arquivado',
+                        'completed' => 'Concluído',
+                        default => $state,
+                    }),
+                Tables\Columns\TextColumn::make('start_date')
+                    ->label('Data de Início')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('deadline')
+                    ->label('Prazo')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Criado em')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                Tables\Actions\Action::make('export_single')
+                    ->label('Exportar Excel')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->action(function ($record) {
+                        $exporter = new \App\Services\ExcelExportService();
+                        $filepath = $exporter->exportProcesses(collect([$record]));
+
+                        return response()->download($filepath, basename($filepath))->deleteFileAfterSend();
+                    }),
+                Tables\Actions\EditAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('export_excel')
+                        ->label('Exportar para Excel')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('success')
+                        ->action(function ($records) {
+                            $exporter = new \App\Services\ExcelExportService();
+                            $filepath = $exporter->exportProcesses($records);
+
+                            return response()->download($filepath, basename($filepath))->deleteFileAfterSend();
+                        })
+                        ->requiresConfirmation()
+                        ->modalHeading('Exportar Processos Selecionados')
+                        ->modalDescription('Será gerado um arquivo Excel compatível com o template UNIMED contendo todos os dados dos processos selecionados.'),
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListProcesses::route('/'),
+            'create' => Pages\CreateProcess::route('/create'),
+            'edit' => Pages\EditProcess::route('/{record}/edit'),
+        ];
     }
 }

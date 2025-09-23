@@ -16,6 +16,7 @@ class Process extends Model
         'office_id',
         'lawyer_id',
         'number',
+        'linked_process_number',
         'title',
         'description',
         'status',
