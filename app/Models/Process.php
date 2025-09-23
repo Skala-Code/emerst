@@ -72,6 +72,15 @@ class Process extends Model
         'decision_phase',
         'situation',
         'defendant_type',
+        // Campos do Órgão Julgador
+        'court_name',
+        'court_state',
+        'distributed_at',
+        'filed_at',
+        'case_value',
+        'free_justice_granted',
+        'subjects',
+        'process_class',
     ];
 
     protected $casts = [
@@ -99,6 +108,12 @@ class Process extends Model
         'current_provision_tr' => 'decimal:2',
         'previous_month_provision_tr' => 'decimal:2',
         'current_provision_ipca' => 'decimal:2',
+        // Novos campos
+        'distributed_at' => 'datetime',
+        'filed_at' => 'datetime',
+        'case_value' => 'decimal:2',
+        'free_justice_granted' => 'boolean',
+        'subjects' => 'array',
     ];
 
     public function company(): BelongsTo
@@ -119,5 +134,25 @@ class Process extends Model
     public function serviceOrders(): HasMany
     {
         return $this->hasMany(ServiceOrder::class);
+    }
+
+    public function parties(): HasMany
+    {
+        return $this->hasMany(ProcessParty::class);
+    }
+
+    public function activeParties(): HasMany
+    {
+        return $this->hasMany(ProcessParty::class)->where('party_type', 'active');
+    }
+
+    public function passiveParties(): HasMany
+    {
+        return $this->hasMany(ProcessParty::class)->where('party_type', 'passive');
+    }
+
+    public function interestedParties(): HasMany
+    {
+        return $this->hasMany(ProcessParty::class)->where('party_type', 'interested');
     }
 }

@@ -364,7 +364,163 @@ class ProcessResource extends Resource
                 ])
                 ->columns(2),
 
-            // === SEÇÃO 12: CAMPOS PERSONALIZADOS ===
+            // === SEÇÃO 12: INFORMAÇÕES DO ÓRGÃO JULGADOR ===
+            Forms\Components\Section::make('Informações do Órgão Julgador')
+                ->schema([
+                    Forms\Components\TextInput::make('court_name')
+                        ->label('Órgão Julgador')
+                        ->maxLength(255)
+                        ->placeholder('Ex: 1ª VARA DO TRABALHO DE CANOAS'),
+                    Forms\Components\Select::make('court_state')
+                        ->label('Estado')
+                        ->options([
+                            'AC' => 'Acre', 'AL' => 'Alagoas', 'AP' => 'Amapá', 'AM' => 'Amazonas',
+                            'BA' => 'Bahia', 'CE' => 'Ceará', 'DF' => 'Distrito Federal', 'ES' => 'Espírito Santo',
+                            'GO' => 'Goiás', 'MA' => 'Maranhão', 'MT' => 'Mato Grosso', 'MS' => 'Mato Grosso do Sul',
+                            'MG' => 'Minas Gerais', 'PA' => 'Pará', 'PB' => 'Paraíba', 'PR' => 'Paraná',
+                            'PE' => 'Pernambuco', 'PI' => 'Piauí', 'RJ' => 'Rio de Janeiro', 'RN' => 'Rio Grande do Norte',
+                            'RS' => 'Rio Grande do Sul', 'RO' => 'Rondônia', 'RR' => 'Roraima', 'SC' => 'Santa Catarina',
+                            'SP' => 'São Paulo', 'SE' => 'Sergipe', 'TO' => 'Tocantins'
+                        ])
+                        ->searchable(),
+                    Forms\Components\DateTimePicker::make('distributed_at')
+                        ->label('Data de Distribuição')
+                        ->displayFormat('d/m/Y H:i'),
+                    Forms\Components\DateTimePicker::make('filed_at')
+                        ->label('Data de Autuação')
+                        ->displayFormat('d/m/Y H:i'),
+                    Forms\Components\TextInput::make('case_value')
+                        ->label('Valor da Causa')
+                        ->numeric()
+                        ->step(0.01)
+                        ->prefix('R$'),
+                    Forms\Components\Toggle::make('free_justice_granted')
+                        ->label('Processo com Justiça Gratuita Deferida')
+                        ->default(false),
+                ])
+                ->columns(3),
+
+            // === SEÇÃO 13: CLASSIFICAÇÃO E ASSUNTOS ===
+            Forms\Components\Section::make('Classificação e Assuntos')
+                ->schema([
+                    Forms\Components\Select::make('process_class')
+                        ->label('Classe do Processo')
+                        ->options([
+                            'reclamacao_trabalhista' => 'Reclamação Trabalhista',
+                            'acao_cautelar' => 'Ação Cautelar',
+                            'acao_rescisoria' => 'Ação Rescisória',
+                            'mandado_seguranca' => 'Mandado de Segurança',
+                            'habeas_corpus' => 'Habeas Corpus',
+                            'embargos_execucao' => 'Embargos à Execução',
+                            'execucao' => 'Execução',
+                            'outros' => 'Outros'
+                        ])
+                        ->searchable(),
+                    Forms\Components\CheckboxList::make('subjects')
+                        ->label('Assuntos do Processo')
+                        ->options([
+                            'horas_extras' => 'Horas Extras',
+                            'adicional_hora_extra' => 'Adicional de Hora Extra',
+                            'aviso_previo' => 'Aviso Prévio',
+                            'base_calculo' => 'Base de Cálculo',
+                            'ctps' => 'CTPS',
+                            'honorarios_justica_trabalho' => 'Honorários na Justiça do Trabalho',
+                            'indenizacao_dano_material' => 'Indenização por Dano Material',
+                            'indenizacao_dano_moral' => 'Indenização por Dano Moral',
+                            'intervalo_interjornadas' => 'Intervalo Interjornadas',
+                            'intervalo_intrajornada' => 'Intervalo Intrajornada',
+                            'repouso_semanal' => 'Repouso Semanal Remunerado e Feriado',
+                            'salario_natura' => 'Salário in Natura',
+                            'verbas_rescissorias' => 'Verbas Rescisórias',
+                            'fgts' => 'FGTS',
+                            'seguro_desemprego' => 'Seguro Desemprego',
+                            'adicional_periculosidade' => 'Adicional de Periculosidade',
+                            'adicional_insalubridade' => 'Adicional de Insalubridade',
+                            'estabilidade' => 'Estabilidade',
+                            'multa_artigo_467' => 'Multa do Artigo 467',
+                            'multa_artigo_477' => 'Multa do Artigo 477',
+                        ])
+                        ->columns(3)
+                        ->searchable(),
+                ])
+                ->columns(1),
+
+            // === SEÇÃO 14: PARTES DO PROCESSO ===
+            Forms\Components\Section::make('Partes do Processo')
+                ->schema([
+                    Forms\Components\Repeater::make('parties')
+                        ->relationship('parties')
+                        ->schema([
+                            Forms\Components\Select::make('party_type')
+                                ->label('Tipo')
+                                ->options([
+                                    'active' => 'Polo Ativo',
+                                    'passive' => 'Polo Passivo',
+                                    'interested' => 'Outros Interessados'
+                                ])
+                                ->required()
+                                ->reactive()
+                                ->columnSpan(1),
+                            Forms\Components\Select::make('person_type')
+                                ->label('Pessoa')
+                                ->options([
+                                    'individual' => 'Pessoa Física',
+                                    'legal' => 'Pessoa Jurídica'
+                                ])
+                                ->required()
+                                ->reactive()
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('role')
+                                ->label('Função')
+                                ->placeholder('Ex: reclamante, reclamado, perito')
+                                ->maxLength(255)
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('name')
+                                ->label('Nome/Razão Social')
+                                ->required()
+                                ->maxLength(255)
+                                ->columnSpan(2),
+                            Forms\Components\TextInput::make('document')
+                                ->label(fn (callable $get) => $get('person_type') === 'individual' ? 'CPF' : 'CNPJ')
+                                ->maxLength(20)
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('registration_number')
+                                ->label(fn (callable $get) => $get('person_type') === 'individual' ? 'RG' : 'Inscrição Estadual')
+                                ->maxLength(20)
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('email')
+                                ->label('E-mail')
+                                ->email()
+                                ->maxLength(255)
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('phone')
+                                ->label('Telefone')
+                                ->maxLength(20)
+                                ->columnSpan(1),
+                            Forms\Components\Textarea::make('address')
+                                ->label('Endereço')
+                                ->rows(2)
+                                ->columnSpan(3),
+                            Forms\Components\TextInput::make('lawyer_name')
+                                ->label('Nome do Advogado')
+                                ->maxLength(255)
+                                ->columnSpan(2),
+                            Forms\Components\TextInput::make('lawyer_oab')
+                                ->label('OAB do Advogado')
+                                ->maxLength(20)
+                                ->columnSpan(1),
+                        ])
+                        ->columns(3)
+                        ->defaultItems(0)
+                        ->addActionLabel('Adicionar Parte')
+                        ->collapsible()
+                        ->itemLabel(fn (array $state): ?string =>
+                            ($state['name'] ?? '') . ' - ' . ($state['role'] ?? 'Sem função')
+                        ),
+                ])
+                ->columnSpanFull(),
+
+            // === SEÇÃO 15: CAMPOS PERSONALIZADOS ===
             ...CustomFieldService::getCustomFieldsForModel('process'),
         ]);
     }
