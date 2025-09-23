@@ -120,6 +120,66 @@ class ProcessResource extends Resource
                         ->required(),
                     Forms\Components\DatePicker::make('deadline')
                         ->label('Prazo Final'),
+
+                    // === PARTES DO PROCESSO ===
+                    Forms\Components\Repeater::make('parties')
+                        ->relationship('parties')
+                        ->label('Partes do Processo')
+                        ->schema([
+                            Forms\Components\Select::make('party_type')
+                                ->label('Tipo')
+                                ->options([
+                                    'active' => 'Polo Ativo (Reclamantes)',
+                                    'passive' => 'Polo Passivo (Reclamados)',
+                                    'interested' => 'Outros Interessados (Peritos, etc.)'
+                                ])
+                                ->required()
+                                ->reactive()
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('role')
+                                ->label('Função')
+                                ->placeholder('Ex: reclamante, reclamado, perito')
+                                ->maxLength(255)
+                                ->columnSpan(1),
+                            Forms\Components\TextInput::make('name')
+                                ->label('Nome/Razão Social')
+                                ->required()
+                                ->maxLength(255)
+                                ->columnSpan(2),
+                            Forms\Components\TextInput::make('document')
+                                ->label('CPF/CNPJ')
+                                ->maxLength(20)
+                                ->columnSpan(1),
+
+                            // Advogados (apenas para polo ativo e passivo)
+                            Forms\Components\Repeater::make('lawyers')
+                                ->label('Advogados')
+                                ->schema([
+                                    Forms\Components\TextInput::make('name')
+                                        ->label('Nome do Advogado')
+                                        ->required()
+                                        ->maxLength(255)
+                                        ->columnSpan(2),
+                                    Forms\Components\TextInput::make('oab')
+                                        ->label('OAB')
+                                        ->required()
+                                        ->maxLength(20)
+                                        ->columnSpan(1),
+                                ])
+                                ->columns(3)
+                                ->defaultItems(0)
+                                ->addActionLabel('Adicionar Advogado')
+                                ->visible(fn (callable $get) => in_array($get('party_type'), ['active', 'passive']))
+                                ->columnSpan(3),
+                        ])
+                        ->columns(3)
+                        ->defaultItems(0)
+                        ->addActionLabel('Adicionar Parte')
+                        ->collapsible()
+                        ->itemLabel(fn (array $state): ?string =>
+                            ($state['name'] ?? '') . ' - ' . ($state['role'] ?? 'Sem função')
+                        )
+                        ->columnSpanFull(),
                 ])
                 ->columns(3),
 
@@ -445,105 +505,7 @@ class ProcessResource extends Resource
                 ])
                 ->columns(1),
 
-            // === SEÇÃO 14: PARTES DO PROCESSO ===
-            Forms\Components\Section::make('Partes do Processo')
-                ->schema([
-                    Forms\Components\Repeater::make('parties')
-                        ->relationship('parties')
-                        ->schema([
-                            Forms\Components\Select::make('party_type')
-                                ->label('Tipo de Parte')
-                                ->options([
-                                    'active' => 'Polo Ativo (Reclamantes)',
-                                    'passive' => 'Polo Passivo (Reclamados)',
-                                    'interested' => 'Outros Interessados (Peritos, etc.)'
-                                ])
-                                ->required()
-                                ->reactive()
-                                ->columnSpan(1),
-                            Forms\Components\Select::make('person_type')
-                                ->label('Pessoa')
-                                ->options([
-                                    'individual' => 'Pessoa Física',
-                                    'legal' => 'Pessoa Jurídica'
-                                ])
-                                ->required()
-                                ->reactive()
-                                ->columnSpan(1),
-                            Forms\Components\TextInput::make('role')
-                                ->label('Função Específica')
-                                ->placeholder('Ex: reclamante, reclamado, perito, assistente técnico')
-                                ->maxLength(255)
-                                ->helperText('Defina a função específica desta parte no processo')
-                                ->columnSpan(1),
-                            Forms\Components\TextInput::make('name')
-                                ->label('Nome/Razão Social')
-                                ->required()
-                                ->maxLength(255)
-                                ->columnSpan(2),
-                            Forms\Components\TextInput::make('document')
-                                ->label(fn (callable $get) => $get('person_type') === 'individual' ? 'CPF' : 'CNPJ')
-                                ->maxLength(20)
-                                ->columnSpan(1),
-                            Forms\Components\TextInput::make('registration_number')
-                                ->label(fn (callable $get) => $get('person_type') === 'individual' ? 'RG' : 'Inscrição Estadual')
-                                ->maxLength(20)
-                                ->columnSpan(1),
-                            Forms\Components\TextInput::make('email')
-                                ->label('E-mail')
-                                ->email()
-                                ->maxLength(255)
-                                ->columnSpan(1),
-                            Forms\Components\TextInput::make('phone')
-                                ->label('Telefone')
-                                ->maxLength(20)
-                                ->columnSpan(1),
-                            Forms\Components\Textarea::make('address')
-                                ->label('Endereço')
-                                ->rows(2)
-                                ->columnSpan(3),
-
-                            // Advogados (apenas para polo ativo e passivo)
-                            Forms\Components\Repeater::make('lawyers')
-                                ->label('Advogados')
-                                ->schema([
-                                    Forms\Components\TextInput::make('name')
-                                        ->label('Nome do Advogado')
-                                        ->required()
-                                        ->maxLength(255)
-                                        ->columnSpan(2),
-                                    Forms\Components\TextInput::make('oab')
-                                        ->label('OAB')
-                                        ->required()
-                                        ->maxLength(20)
-                                        ->columnSpan(1),
-                                    Forms\Components\TextInput::make('email')
-                                        ->label('E-mail')
-                                        ->email()
-                                        ->maxLength(255)
-                                        ->columnSpan(1),
-                                    Forms\Components\TextInput::make('phone')
-                                        ->label('Telefone')
-                                        ->maxLength(20)
-                                        ->columnSpan(1),
-                                ])
-                                ->columns(3)
-                                ->defaultItems(0)
-                                ->addActionLabel('Adicionar Advogado')
-                                ->visible(fn (callable $get) => in_array($get('party_type'), ['active', 'passive']))
-                                ->columnSpan(3),
-                        ])
-                        ->columns(3)
-                        ->defaultItems(0)
-                        ->addActionLabel('Adicionar Parte')
-                        ->collapsible()
-                        ->itemLabel(fn (array $state): ?string =>
-                            ($state['name'] ?? '') . ' - ' . ($state['role'] ?? 'Sem função')
-                        ),
-                ])
-                ->columnSpanFull(),
-
-            // === SEÇÃO 15: CAMPOS PERSONALIZADOS ===
+            // === SEÇÃO 14: CAMPOS PERSONALIZADOS ===
             ...CustomFieldService::getCustomFieldsForModel('process'),
         ]);
     }
