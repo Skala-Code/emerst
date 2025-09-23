@@ -452,11 +452,11 @@ class ProcessResource extends Resource
                         ->relationship('parties')
                         ->schema([
                             Forms\Components\Select::make('party_type')
-                                ->label('Tipo')
+                                ->label('Tipo de Parte')
                                 ->options([
-                                    'active' => 'Polo Ativo',
-                                    'passive' => 'Polo Passivo',
-                                    'interested' => 'Outros Interessados'
+                                    'active' => 'Polo Ativo (Reclamantes)',
+                                    'passive' => 'Polo Passivo (Reclamados)',
+                                    'interested' => 'Outros Interessados (Peritos, etc.)'
                                 ])
                                 ->required()
                                 ->reactive()
@@ -471,9 +471,10 @@ class ProcessResource extends Resource
                                 ->reactive()
                                 ->columnSpan(1),
                             Forms\Components\TextInput::make('role')
-                                ->label('Função')
-                                ->placeholder('Ex: reclamante, reclamado, perito')
+                                ->label('Função Específica')
+                                ->placeholder('Ex: reclamante, reclamado, perito, assistente técnico')
                                 ->maxLength(255)
+                                ->helperText('Defina a função específica desta parte no processo')
                                 ->columnSpan(1),
                             Forms\Components\TextInput::make('name')
                                 ->label('Nome/Razão Social')
@@ -501,14 +502,36 @@ class ProcessResource extends Resource
                                 ->label('Endereço')
                                 ->rows(2)
                                 ->columnSpan(3),
-                            Forms\Components\TextInput::make('lawyer_name')
-                                ->label('Nome do Advogado')
-                                ->maxLength(255)
-                                ->columnSpan(2),
-                            Forms\Components\TextInput::make('lawyer_oab')
-                                ->label('OAB do Advogado')
-                                ->maxLength(20)
-                                ->columnSpan(1),
+
+                            // Advogados (apenas para polo ativo e passivo)
+                            Forms\Components\Repeater::make('lawyers')
+                                ->label('Advogados')
+                                ->schema([
+                                    Forms\Components\TextInput::make('name')
+                                        ->label('Nome do Advogado')
+                                        ->required()
+                                        ->maxLength(255)
+                                        ->columnSpan(2),
+                                    Forms\Components\TextInput::make('oab')
+                                        ->label('OAB')
+                                        ->required()
+                                        ->maxLength(20)
+                                        ->columnSpan(1),
+                                    Forms\Components\TextInput::make('email')
+                                        ->label('E-mail')
+                                        ->email()
+                                        ->maxLength(255)
+                                        ->columnSpan(1),
+                                    Forms\Components\TextInput::make('phone')
+                                        ->label('Telefone')
+                                        ->maxLength(20)
+                                        ->columnSpan(1),
+                                ])
+                                ->columns(3)
+                                ->defaultItems(0)
+                                ->addActionLabel('Adicionar Advogado')
+                                ->visible(fn (callable $get) => in_array($get('party_type'), ['active', 'passive']))
+                                ->columnSpan(3),
                         ])
                         ->columns(3)
                         ->defaultItems(0)

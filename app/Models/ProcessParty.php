@@ -17,14 +17,14 @@ class ProcessParty extends Model
         'email',
         'phone',
         'address',
-        'lawyer_name',
-        'lawyer_oab',
+        'lawyers',
         'role',
     ];
 
     protected $casts = [
         'party_type' => 'string',
         'person_type' => 'string',
+        'lawyers' => 'array',
     ];
 
     public function process(): BelongsTo
