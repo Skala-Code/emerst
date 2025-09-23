@@ -517,9 +517,8 @@ class ProcessResource extends Resource
                 ->columns(2),
 
 
-            // === SEÇÃO 12: CAMPOS PERSONALIZADOS ===
-            // Temporariamente desabilitado para debug
-            // ...CustomFieldService::getCustomFieldsForModel('process'),
+            // === SEÇÃO 13: CAMPOS PERSONALIZADOS ===
+            ...CustomFieldService::getCustomFieldsForModel('process'),
         ]);
     }
 
