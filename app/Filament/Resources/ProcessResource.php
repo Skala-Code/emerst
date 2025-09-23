@@ -563,12 +563,13 @@ class ProcessResource extends Resource
                         'secondary' => 'archived',
                         'primary' => 'completed',
                     ])
-                    ->enum([
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
                         'active' => 'Ativo',
                         'suspended' => 'Suspenso',
                         'archived' => 'Arquivado',
                         'completed' => 'Concluído',
-                    ]),
+                        default => $state,
+                    }),
                 Tables\Columns\TextColumn::make('start_date')
                     ->label('Data Início')
                     ->date('d/m/Y')
