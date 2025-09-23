@@ -17,6 +17,10 @@ class Process extends Model
         'lawyer_id',
         'number',
         'linked_process_number',
+        'old_process_number',
+        'judiciary_type',
+        'process_nature',
+        'tribunal',
         'title',
         'description',
         'status',
@@ -76,12 +80,15 @@ class Process extends Model
         // Campos do Órgão Julgador
         'court_name',
         'court_state',
+        'city_district',
         'distributed_at',
         'filed_at',
+        'citation_date',
         'case_value',
         'free_justice_granted',
         'subjects',
         'process_class',
+        'process_format',
     ];
 
     protected $casts = [
@@ -112,6 +119,7 @@ class Process extends Model
         // Novos campos
         'distributed_at' => 'datetime',
         'filed_at' => 'datetime',
+        'citation_date' => 'date',
         'case_value' => 'decimal:2',
         'free_justice_granted' => 'boolean',
         'subjects' => 'array',

@@ -102,6 +102,83 @@ class ProcessResource extends Resource
                         ->label('Número da Pasta')
                         ->maxLength(255)
                         ->columnSpan(1),
+                    Forms\Components\TextInput::make('old_process_number')
+                        ->label('Número do Processo Antigo')
+                        ->maxLength(255)
+                        ->columnSpan(1),
+
+                    // === DADOS JURÍDICOS ===
+                    Forms\Components\Select::make('judiciary_type')
+                        ->label('Judiciário')
+                        ->options([
+                            'trabalhista' => 'Justiça do Trabalho',
+                            'federal' => 'Justiça Federal',
+                            'estadual' => 'Justiça Estadual',
+                            'militar' => 'Justiça Militar',
+                            'eleitoral' => 'Justiça Eleitoral',
+                        ])
+                        ->searchable()
+                        ->columnSpan(1),
+                    Forms\Components\Select::make('process_nature')
+                        ->label('Natureza do Processo')
+                        ->options([
+                            'trabalhista' => 'Trabalhista',
+                            'civil' => 'Cível',
+                            'criminal' => 'Criminal',
+                            'tributario' => 'Tributário',
+                            'administrativo' => 'Administrativo',
+                            'previdenciario' => 'Previdenciário',
+                            'consumidor' => 'Consumidor',
+                            'familia' => 'Família',
+                        ])
+                        ->searchable()
+                        ->columnSpan(1),
+                    Forms\Components\Select::make('tribunal')
+                        ->label('Tribunal/Instância')
+                        ->options([
+                            // Trabalho
+                            'trt1' => 'TRT 1ª Região (RJ)',
+                            'trt2' => 'TRT 2ª Região (SP)',
+                            'trt3' => 'TRT 3ª Região (MG)',
+                            'trt4' => 'TRT 4ª Região (RS)',
+                            'trt5' => 'TRT 5ª Região (BA)',
+                            'tst' => 'TST - Tribunal Superior do Trabalho',
+                            // Federal
+                            'trf1' => 'TRF 1ª Região',
+                            'trf2' => 'TRF 2ª Região',
+                            'trf3' => 'TRF 3ª Região',
+                            'trf4' => 'TRF 4ª Região',
+                            'trf5' => 'TRF 5ª Região',
+                            // Superiores
+                            'stj' => 'STJ - Superior Tribunal de Justiça',
+                            'stf' => 'STF - Supremo Tribunal Federal',
+                            // Estaduais (exemplos principais)
+                            'tjsp' => 'TJSP - Tribunal de Justiça de SP',
+                            'tjrj' => 'TJRJ - Tribunal de Justiça do RJ',
+                            'tjmg' => 'TJMG - Tribunal de Justiça de MG',
+                            'tjrs' => 'TJRS - Tribunal de Justiça do RS',
+                        ])
+                        ->searchable()
+                        ->columnSpan(1),
+                    Forms\Components\TextInput::make('city_district')
+                        ->label('Cidade/Comarca')
+                        ->maxLength(255)
+                        ->placeholder('Ex: São Paulo, Porto Alegre, etc.')
+                        ->columnSpan(1),
+                    Forms\Components\Select::make('process_format')
+                        ->label('Formato do Processo')
+                        ->options([
+                            'eletronico' => 'Eletrônico',
+                            'fisico' => 'Físico',
+                            'hibrido' => 'Híbrido',
+                        ])
+                        ->default('eletronico')
+                        ->columnSpan(1),
+                    Forms\Components\DatePicker::make('citation_date')
+                        ->label('Data da Citação')
+                        ->displayFormat('d/m/Y')
+                        ->columnSpan(1),
+
                     Forms\Components\Textarea::make('description')
                         ->label('Descrição')
                         ->rows(3)
