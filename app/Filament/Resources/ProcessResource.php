@@ -102,11 +102,6 @@ class ProcessResource extends Resource
                         ->label('Número da Pasta')
                         ->maxLength(255)
                         ->columnSpan(1),
-                    Forms\Components\TextInput::make('title')
-                        ->label('Título')
-                        ->required()
-                        ->maxLength(255)
-                        ->columnSpanFull(),
                     Forms\Components\Textarea::make('description')
                         ->label('Descrição')
                         ->rows(3)
@@ -544,11 +539,6 @@ class ProcessResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
-                Tables\Columns\TextColumn::make('title')
-                    ->label('Título')
-                    ->limit(50)
-                    ->searchable()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('court_name')
                     ->label('Vara')
                     ->limit(30)
