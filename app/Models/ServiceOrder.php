@@ -28,6 +28,51 @@ class ServiceOrder extends Model
         'current_notes',
         'custom_data',
         'workflow_history',
+        // === GERENCIADOR ===
+        'team',
+        'diligences',
+        'purposes',
+        // === DADOS DO CÁLCULO ANALISADO ===
+        'analyzed_calculation_id_fls',
+        'analyzed_index_type',
+        'analyzed_index_other',
+        'analyzed_date_updated',
+        'analyzed_value_updated',
+        // === PAGAMENTOS EFETUADOS ===
+        'payments_made',
+        // === PRAZOS ===
+        'publication_date',
+        'deadline_days',
+        'judicial_deadline',
+        'internal_deadline',
+        // === TÉCNICO ===
+        'client_is_first_defendant',
+        'number_of_substitutes',
+        'work_providence',
+        // === DADOS DO CÁLCULO EFETUADO ===
+        'performed_index_type',
+        'performed_index_other',
+        'performed_date_updated',
+        'performed_value_updated',
+        // === PAGAMENTOS CONSIDERADOS ===
+        'payments_considered',
+        // === FATURAMENTO ===
+        'billing_contract_type',
+        'billing_economic_group',
+        'billing_requester_company_name',
+        'billing_requester_cnpj',
+        'billing_issuer_company_name',
+        'billing_issuer_cnpj',
+        'billing_invoice_number',
+        'billing_issue_date',
+        'billing_gross_value',
+        'billing_internal_technical_cost',
+        'billing_external_technical_cost',
+        'billing_other_costs',
+        'billing_tax',
+        'billing_net_total',
+        'billing_invoice_status',
+        'billing_reconciliation_status',
         // === VERBAS TRABALHISTAS ===
         // Horas Extras
         'special_interval_operators',
@@ -142,6 +187,33 @@ class ServiceOrder extends Model
         'actual_hours' => 'decimal:2',
         'calculation_date' => 'datetime',
         'validation_passed' => 'boolean',
+        // === GERENCIADOR ===
+        'diligences' => 'array',
+        'purposes' => 'array',
+        // === DADOS DO CÁLCULO ANALISADO ===
+        'analyzed_date_updated' => 'date',
+        'analyzed_value_updated' => 'decimal:2',
+        // === PAGAMENTOS EFETUADOS ===
+        'payments_made' => 'array',
+        // === PRAZOS ===
+        'publication_date' => 'date',
+        'judicial_deadline' => 'date',
+        'internal_deadline' => 'date',
+        // === TÉCNICO ===
+        'client_is_first_defendant' => 'boolean',
+        // === DADOS DO CÁLCULO EFETUADO ===
+        'performed_date_updated' => 'date',
+        'performed_value_updated' => 'decimal:2',
+        // === PAGAMENTOS CONSIDERADOS ===
+        'payments_considered' => 'array',
+        // === FATURAMENTO ===
+        'billing_issue_date' => 'date',
+        'billing_gross_value' => 'decimal:2',
+        'billing_internal_technical_cost' => 'decimal:2',
+        'billing_external_technical_cost' => 'decimal:2',
+        'billing_other_costs' => 'decimal:2',
+        'billing_tax' => 'decimal:2',
+        'billing_net_total' => 'decimal:2',
         // Todos os valores monetários
         'special_interval_operators' => 'decimal:2',
         'he_int_intrajornada_384' => 'decimal:2',

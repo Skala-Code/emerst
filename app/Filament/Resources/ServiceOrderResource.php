@@ -95,6 +95,43 @@ class ServiceOrderResource extends Resource
                                 ])
                                 ->columns(3),
 
+                            Forms\Components\Section::make('Gerenciador')
+                                ->schema([
+                                    Forms\Components\Select::make('team')
+                                        ->label('Equipe')
+                                        ->options([
+                                            'juridico' => 'Jurídico',
+                                            'contabil' => 'Contábil',
+                                            'pericial' => 'Pericial',
+                                            'administrativo' => 'Administrativo',
+                                        ])
+                                        ->searchable(),
+                                    Forms\Components\CheckboxList::make('diligences')
+                                        ->label('Diligências')
+                                        ->options([
+                                            'citacao' => 'Citação',
+                                            'intimacao' => 'Intimação',
+                                            'audiencia' => 'Audiência',
+                                            'pericia' => 'Perícia',
+                                            'calculo' => 'Cálculo',
+                                            'outra' => 'Outra',
+                                        ])
+                                        ->columns(3),
+                                    Forms\Components\CheckboxList::make('purposes')
+                                        ->label('Finalidades')
+                                        ->options([
+                                            'contestacao' => 'Contestação',
+                                            'defesa' => 'Defesa',
+                                            'recurso' => 'Recurso',
+                                            'execucao' => 'Execução',
+                                            'acordo' => 'Acordo',
+                                            'outra' => 'Outra',
+                                        ])
+                                        ->columns(3),
+                                ])
+                                ->columns(1)
+                                ->collapsible(),
+
                             Forms\Components\Section::make('Prioridade e Status')
                                 ->schema([
                                     Forms\Components\Select::make('priority')
@@ -422,7 +459,312 @@ class ServiceOrderResource extends Resource
                                 ->columns(2),
                         ]),
 
-                    // === ABA 5: CAMPOS PERSONALIZADOS ===
+                    // === ABA 5: CÁLCULO ANALISADO ===
+                    Forms\Components\Tabs\Tab::make('Cálculo Analisado')
+                        ->schema([
+                            Forms\Components\Section::make('Dados do Cálculo Analisado')
+                                ->schema([
+                                    Forms\Components\TextInput::make('analyzed_calculation_id_fls')
+                                        ->label('ID./Fls.')
+                                        ->maxLength(255),
+                                    Forms\Components\Select::make('analyzed_index_type')
+                                        ->label('Índice Adotado')
+                                        ->options([
+                                            'ipca' => 'IPCA',
+                                            'inpc' => 'INPC',
+                                            'igpm' => 'IGP-M',
+                                            'selic' => 'SELIC',
+                                            'tr' => 'TR',
+                                            'outro' => 'Outro',
+                                        ])
+                                        ->reactive(),
+                                    Forms\Components\TextInput::make('analyzed_index_other')
+                                        ->label('Índice Diverso')
+                                        ->maxLength(255)
+                                        ->visible(fn (callable $get) => $get('analyzed_index_type') === 'outro'),
+                                    Forms\Components\DatePicker::make('analyzed_date_updated')
+                                        ->label('Data Atualizado'),
+                                    Forms\Components\TextInput::make('analyzed_value_updated')
+                                        ->label('Valor Atualizado')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                ])
+                                ->columns(2),
+
+                            Forms\Components\Section::make('Pagamentos Efetuados')
+                                ->schema([
+                                    Forms\Components\Repeater::make('payments_made')
+                                        ->label('Pagamentos')
+                                        ->schema([
+                                            Forms\Components\Select::make('payment_method')
+                                                ->label('Meio de Pagamento')
+                                                ->options([
+                                                    'dinheiro' => 'Dinheiro',
+                                                    'cheque' => 'Cheque',
+                                                    'transferencia' => 'Transferência',
+                                                    'deposito' => 'Depósito',
+                                                    'pix' => 'PIX',
+                                                    'cartao' => 'Cartão',
+                                                    'outro' => 'Outro',
+                                                ])
+                                                ->required(),
+                                            Forms\Components\DatePicker::make('date')
+                                                ->label('Data')
+                                                ->required(),
+                                            Forms\Components\TextInput::make('value')
+                                                ->label('Valor')
+                                                ->numeric()
+                                                ->prefix('R$')
+                                                ->step(0.01)
+                                                ->required(),
+                                        ])
+                                        ->columns(3)
+                                        ->defaultItems(0)
+                                        ->addActionLabel('Adicionar Pagamento'),
+                                ])
+                                ->collapsible(),
+                        ]),
+
+                    // === ABA 6: PRAZOS ===
+                    Forms\Components\Tabs\Tab::make('Prazos')
+                        ->schema([
+                            Forms\Components\Section::make('Prazos Processuais')
+                                ->schema([
+                                    Forms\Components\DatePicker::make('publication_date')
+                                        ->label('Data Publicação')
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                            $days = $get('deadline_days');
+                                            if ($state && $days) {
+                                                $publicationDate = \Carbon\Carbon::parse($state);
+                                                $judicialDeadline = $publicationDate->addWeekdays($days);
+                                                $set('judicial_deadline', $judicialDeadline->format('Y-m-d'));
+                                            }
+                                        }),
+                                    Forms\Components\TextInput::make('deadline_days')
+                                        ->label('Dias de Prazo (dias úteis)')
+                                        ->numeric()
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                            $publicationDate = $get('publication_date');
+                                            if ($state && $publicationDate) {
+                                                $date = \Carbon\Carbon::parse($publicationDate);
+                                                $judicialDeadline = $date->addWeekdays($state);
+                                                $set('judicial_deadline', $judicialDeadline->format('Y-m-d'));
+                                            }
+                                        }),
+                                    Forms\Components\DatePicker::make('judicial_deadline')
+                                        ->label('Prazo Judicial')
+                                        ->disabled()
+                                        ->dehydrated(),
+                                    Forms\Components\DatePicker::make('internal_deadline')
+                                        ->label('Prazo Interno'),
+                                ])
+                                ->columns(2)
+                                ->description('O Prazo Judicial é calculado automaticamente com base na Data de Publicação + Dias de Prazo (considerando apenas dias úteis).'),
+                        ]),
+
+                    // === ABA 7: TÉCNICO ===
+                    Forms\Components\Tabs\Tab::make('Técnico')
+                        ->schema([
+                            Forms\Components\Section::make('Informações Técnicas')
+                                ->schema([
+                                    Forms\Components\Toggle::make('client_is_first_defendant')
+                                        ->label('Cliente é 01ª Reclamada'),
+                                    Forms\Components\TextInput::make('number_of_substitutes')
+                                        ->label('Nº de Substituídos')
+                                        ->numeric(),
+                                    Forms\Components\Select::make('work_providence')
+                                        ->label('Providência do Trabalho')
+                                        ->options([
+                                            'calculo_liquidacao' => 'Cálculo de Liquidação',
+                                            'impugnacao' => 'Impugnação',
+                                            'manifestacao' => 'Manifestação',
+                                            'recurso' => 'Recurso',
+                                            'parecer' => 'Parecer',
+                                            'outra' => 'Outra',
+                                        ])
+                                        ->searchable(),
+                                ])
+                                ->columns(3),
+
+                            Forms\Components\Section::make('Dados do Cálculo Efetuado')
+                                ->schema([
+                                    Forms\Components\Select::make('performed_index_type')
+                                        ->label('Índice Adotado')
+                                        ->options([
+                                            'ipca' => 'IPCA',
+                                            'inpc' => 'INPC',
+                                            'igpm' => 'IGP-M',
+                                            'selic' => 'SELIC',
+                                            'tr' => 'TR',
+                                            'outro' => 'Outro',
+                                        ])
+                                        ->reactive(),
+                                    Forms\Components\TextInput::make('performed_index_other')
+                                        ->label('Índice Diverso')
+                                        ->maxLength(255)
+                                        ->visible(fn (callable $get) => $get('performed_index_type') === 'outro'),
+                                    Forms\Components\DatePicker::make('performed_date_updated')
+                                        ->label('Data Atualizado'),
+                                    Forms\Components\TextInput::make('performed_value_updated')
+                                        ->label('Valor Atualizado')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                ])
+                                ->columns(2)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Pagamentos Considerados')
+                                ->schema([
+                                    Forms\Components\Repeater::make('payments_considered')
+                                        ->label('Pagamentos')
+                                        ->schema([
+                                            Forms\Components\Select::make('payment_method')
+                                                ->label('Meio de Pagamento')
+                                                ->options([
+                                                    'dinheiro' => 'Dinheiro',
+                                                    'cheque' => 'Cheque',
+                                                    'transferencia' => 'Transferência',
+                                                    'deposito' => 'Depósito',
+                                                    'pix' => 'PIX',
+                                                    'cartao' => 'Cartão',
+                                                    'outro' => 'Outro',
+                                                ])
+                                                ->required(),
+                                            Forms\Components\DatePicker::make('date')
+                                                ->label('Data')
+                                                ->required(),
+                                            Forms\Components\TextInput::make('value')
+                                                ->label('Valor')
+                                                ->numeric()
+                                                ->prefix('R$')
+                                                ->step(0.01)
+                                                ->required(),
+                                        ])
+                                        ->columns(3)
+                                        ->defaultItems(0)
+                                        ->addActionLabel('Adicionar Pagamento'),
+                                ])
+                                ->collapsible(),
+                        ]),
+
+                    // === ABA 8: FATURAMENTO ===
+                    Forms\Components\Tabs\Tab::make('Faturamento')
+                        ->schema([
+                            Forms\Components\Section::make('Dados do Contrato')
+                                ->schema([
+                                    Forms\Components\Select::make('billing_contract_type')
+                                        ->label('Tipo de Contrato')
+                                        ->options([
+                                            'fixo' => 'Fixo',
+                                            'variavel' => 'Variável',
+                                            'misto' => 'Misto',
+                                            'avulso' => 'Avulso',
+                                        ]),
+                                    Forms\Components\TextInput::make('billing_economic_group')
+                                        ->label('Grupo Econômico')
+                                        ->maxLength(255),
+                                ])
+                                ->columns(2),
+
+                            Forms\Components\Section::make('Dados do Solicitante')
+                                ->schema([
+                                    Forms\Components\TextInput::make('billing_requester_company_name')
+                                        ->label('Razão Social do Solicitante')
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('billing_requester_cnpj')
+                                        ->label('CNPJ do Solicitante')
+                                        ->mask('99.999.999/9999-99')
+                                        ->maxLength(18),
+                                ])
+                                ->columns(2)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Dados do Emitente')
+                                ->schema([
+                                    Forms\Components\TextInput::make('billing_issuer_company_name')
+                                        ->label('Razão Social do Emitente')
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('billing_issuer_cnpj')
+                                        ->label('CNPJ do Emitente')
+                                        ->mask('99.999.999/9999-99')
+                                        ->maxLength(18),
+                                ])
+                                ->columns(2)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Nota Fiscal')
+                                ->schema([
+                                    Forms\Components\TextInput::make('billing_invoice_number')
+                                        ->label('Nº Nota Fiscal')
+                                        ->maxLength(255),
+                                    Forms\Components\DatePicker::make('billing_issue_date')
+                                        ->label('Data Emissão'),
+                                    Forms\Components\TextInput::make('billing_gross_value')
+                                        ->label('Valor Bruto')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                ])
+                                ->columns(3),
+
+                            Forms\Components\Section::make('Custos')
+                                ->schema([
+                                    Forms\Components\TextInput::make('billing_internal_technical_cost')
+                                        ->label('Custo Técnico Interno')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                    Forms\Components\TextInput::make('billing_external_technical_cost')
+                                        ->label('Custo Técnico Externo')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                    Forms\Components\TextInput::make('billing_other_costs')
+                                        ->label('Outros Custos')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                    Forms\Components\TextInput::make('billing_tax')
+                                        ->label('Imposto')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                    Forms\Components\TextInput::make('billing_net_total')
+                                        ->label('Total Líquido')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                ])
+                                ->columns(3)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Situação')
+                                ->schema([
+                                    Forms\Components\Select::make('billing_invoice_status')
+                                        ->label('Situação da Nota Fiscal')
+                                        ->options([
+                                            'emitida' => 'Emitida',
+                                            'pendente' => 'Pendente',
+                                            'cancelada' => 'Cancelada',
+                                            'paga' => 'Paga',
+                                        ]),
+                                    Forms\Components\Select::make('billing_reconciliation_status')
+                                        ->label('Situação da Conciliação')
+                                        ->options([
+                                            'conciliada' => 'Conciliada',
+                                            'pendente' => 'Pendente',
+                                            'divergente' => 'Divergente',
+                                            'nao_aplicavel' => 'Não Aplicável',
+                                        ]),
+                                ])
+                                ->columns(2),
+                        ]),
+
+                    // === ABA 9: CAMPOS PERSONALIZADOS ===
                     Forms\Components\Tabs\Tab::make('Campos Personalizados')
                         ->schema(CustomFieldService::getCustomFieldsForModel('service_order')),
                 ])
