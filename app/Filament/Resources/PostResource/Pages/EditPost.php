@@ -18,6 +18,8 @@ class EditPost extends EditRecord
      */
     protected static string $resource = PostResource::class;
 
+    protected static ?string $title = 'Editar Postagem';
+
     /**
      * The preview modal URL.
      */
@@ -37,14 +39,16 @@ class EditPost extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            PreviewAction::make(),
+            PreviewAction::make()
+                ->label('Visualizar'),
 
             Actions\Action::make('view')
-                ->label('View post')
+                ->label('Ver postagem')
                 ->url(fn ($record) => $record->url)
                 ->extraAttributes(['target' => '_blank']),
 
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 }

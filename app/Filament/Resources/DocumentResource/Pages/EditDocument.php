@@ -10,10 +10,13 @@ class EditDocument extends EditRecord
 {
     protected static string $resource = DocumentResource::class;
 
+    protected static ?string $title = 'Editar Documento';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 }

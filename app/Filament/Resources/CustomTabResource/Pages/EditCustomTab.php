@@ -10,10 +10,13 @@ class EditCustomTab extends EditRecord
 {
     protected static string $resource = CustomTabResource::class;
 
+    protected static ?string $title = 'Editar Aba Personalizada';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 }

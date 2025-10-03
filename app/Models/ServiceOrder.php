@@ -73,20 +73,6 @@ class ServiceOrder extends Model
         'billing_net_total',
         'billing_invoice_status',
         'billing_reconciliation_status',
-        // === DADOS DA SOLICITAÇÃO ===
-        'request_datetime',
-        'requester_name',
-        'requester_phone',
-        'requester_office',
-        'requester_email',
-        'requester_cc_email',
-        'fixed_cc_emails',
-        'requester_client',
-        'client_is_main_party',
-        'interested_party_request',
-        'client_deadline',
-        'requested_time',
-        'requester_observation',
         // === DISTRIBUIDOR - PRÉ ANÁLISE ===
         'pre_analysis_text',
         'decision_type',
@@ -271,10 +257,6 @@ class ServiceOrder extends Model
         'billing_other_costs' => 'decimal:2',
         'billing_tax' => 'decimal:2',
         'billing_net_total' => 'decimal:2',
-        // === DADOS DA SOLICITAÇÃO ===
-        'request_datetime' => 'datetime',
-        'client_is_main_party' => 'boolean',
-        'client_deadline' => 'date',
         // === DISTRIBUIDOR - PRÉ ANÁLISE ===
         'interest_granted' => 'boolean',
         'prescription_granted' => 'boolean',

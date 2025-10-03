@@ -8,4 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateCustomTab extends CreateRecord
 {
     protected static string $resource = CustomTabResource::class;
+
+    protected static ?string $title = 'Criar Aba Personalizada';
 }

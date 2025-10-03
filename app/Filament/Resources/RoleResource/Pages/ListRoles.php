@@ -10,10 +10,13 @@ class ListRoles extends ListRecords
 {
     protected static string $resource = RoleResource::class;
 
+    protected static ?string $title = 'Funções';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Nova Função'),
         ];
     }
 }

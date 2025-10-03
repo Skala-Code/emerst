@@ -11,4 +11,6 @@ class CreatePost extends CreateRecord
      * The resource model.
      */
     protected static string $resource = PostResource::class;
+
+    protected static ?string $title = 'Criar Postagem';
 }

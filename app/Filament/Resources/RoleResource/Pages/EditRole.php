@@ -10,10 +10,13 @@ class EditRole extends EditRecord
 {
     protected static string $resource = RoleResource::class;
 
+    protected static ?string $title = 'Editar Função';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 }

@@ -10,10 +10,13 @@ class ListCustomFields extends ListRecords
 {
     protected static string $resource = CustomFieldResource::class;
 
+    protected static ?string $title = 'Campos Personalizados';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Novo Campo Personalizado'),
         ];
     }
 }

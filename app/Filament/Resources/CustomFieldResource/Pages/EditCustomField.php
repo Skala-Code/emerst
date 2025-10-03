@@ -10,10 +10,13 @@ class EditCustomField extends EditRecord
 {
     protected static string $resource = CustomFieldResource::class;
 
+    protected static ?string $title = 'Editar Campo Personalizado';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 }

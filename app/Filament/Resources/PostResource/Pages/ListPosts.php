@@ -14,13 +14,16 @@ class ListPosts extends ListRecords
      */
     protected static string $resource = PostResource::class;
 
+    protected static ?string $title = 'Postagens';
+
     /**
      * The header actions.
      */
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Nova Postagem'),
         ];
     }
 
