@@ -12,10 +12,24 @@ class Office extends Model
     protected $fillable = [
         'company_id',
         'name',
+        'custom_name',
+        'contract_status',
+        'legal_name',
+        'cnpj',
         'email',
         'phone',
         'address',
+        'zip_code',
+        'address_number',
+        'complement',
+        'state',
+        'city',
         'active',
+        'responsible_name',
+        'responsible_cpf',
+        'responsible_phone',
+        'responsible_email',
+        'responsible_position',
     ];
 
     protected $casts = [

@@ -13,7 +13,13 @@ class ListServiceOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Nova Ordem de Serviço'),
         ];
+    }
+
+    public function getTitle(): string
+    {
+        return 'Ordens de Serviço';
     }
 }

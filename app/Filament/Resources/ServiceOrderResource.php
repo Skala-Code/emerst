@@ -48,9 +48,79 @@ class ServiceOrderResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Tabs::make('Service Order Tabs')
+            Forms\Components\Tabs::make('Abas da Ordem de Serviço')
                 ->tabs([
-                    // === ABA 1: INFORMAÇÕES BÁSICAS ===
+                    // === ABA 1: DADOS DA SOLICITAÇÃO ===
+                    Forms\Components\Tabs\Tab::make('Dados da Solicitação')
+                        ->schema([
+                            Forms\Components\Section::make('Email Original')
+                                ->schema([
+                                    Forms\Components\Textarea::make('email_original')
+                                        ->label('Email Original Recebido')
+                                        ->rows(5)
+                                        ->columnSpanFull(),
+                                ])
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Dados do Solicitante')
+                                ->schema([
+                                    Forms\Components\DateTimePicker::make('request_datetime')
+                                        ->label('Data/Hora Solicitação')
+                                        ->seconds(false),
+                                    Forms\Components\TextInput::make('requester_name')
+                                        ->label('Nome do Solicitante')
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('requester_phone')
+                                        ->label('Telefone Solicitante')
+                                        ->mask('(99) 99999-9999')
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('requester_office')
+                                        ->label('Escritório Solicitante')
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('requester_email')
+                                        ->label('E-mail do Solicitante')
+                                        ->email()
+                                        ->maxLength(255),
+                                    Forms\Components\TextInput::make('requester_cc_email')
+                                        ->label('E-mail cópia Solicitante')
+                                        ->email()
+                                        ->maxLength(255),
+                                    Forms\Components\Textarea::make('fixed_cc_emails')
+                                        ->label('E-mails em cópia fixos')
+                                        ->rows(2)
+                                        ->helperText('Separe múltiplos e-mails com vírgula'),
+                                ])
+                                ->columns(2),
+
+                            Forms\Components\Section::make('Cliente e Parte Interessada')
+                                ->schema([
+                                    Forms\Components\TextInput::make('requester_client')
+                                        ->label('Cliente Solicitante')
+                                        ->maxLength(255),
+                                    Forms\Components\Toggle::make('client_is_main_party')
+                                        ->label('Cliente é Parte Principal'),
+                                    Forms\Components\TextInput::make('interested_party_request')
+                                        ->label('Parte Interessada')
+                                        ->maxLength(255),
+                                ])
+                                ->columns(3),
+
+                            Forms\Components\Section::make('Prazos e Observações')
+                                ->schema([
+                                    Forms\Components\DatePicker::make('client_deadline')
+                                        ->label('Prazo Cliente'),
+                                    Forms\Components\TimePicker::make('requested_time')
+                                        ->label('Horário Solicitado')
+                                        ->seconds(false),
+                                    Forms\Components\Textarea::make('requester_observation')
+                                        ->label('Observação do Solicitante')
+                                        ->rows(3)
+                                        ->columnSpanFull(),
+                                ])
+                                ->columns(2),
+                        ]),
+
+                    // === ABA 2: INFORMAÇÕES BÁSICAS ===
                     Forms\Components\Tabs\Tab::make('Informações Básicas')
                         ->schema([
                             Forms\Components\Section::make('Dados da Ordem de Serviço')
@@ -468,7 +538,7 @@ class ServiceOrderResource extends Resource
                                         ->label('ID./Fls.')
                                         ->maxLength(255),
                                     Forms\Components\Select::make('analyzed_index_type')
-                                        ->label('Índice Adotado')
+                                        ->label('Índice Aplicado')
                                         ->options([
                                             'ipca' => 'IPCA',
                                             'inpc' => 'INPC',
@@ -484,11 +554,20 @@ class ServiceOrderResource extends Resource
                                         ->visible(fn (callable $get) => $get('analyzed_index_type') === 'outro'),
                                     Forms\Components\DatePicker::make('analyzed_date_updated')
                                         ->label('Data Atualizado'),
-                                    Forms\Components\TextInput::make('analyzed_value_updated')
-                                        ->label('Valor Atualizado')
+                                    Forms\Components\TextInput::make('analyzed_gross_value')
+                                        ->label('Valor Bruto')
                                         ->numeric()
                                         ->prefix('R$')
                                         ->step(0.01),
+                                    Forms\Components\TextInput::make('analyzed_net_value')
+                                        ->label('Valor Líquido')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                    Forms\Components\Textarea::make('calculation_observation')
+                                        ->label('Observação sobre o Cálculo')
+                                        ->rows(3)
+                                        ->columnSpanFull(),
                                 ])
                                 ->columns(2),
 
@@ -522,6 +601,10 @@ class ServiceOrderResource extends Resource
                                         ->columns(3)
                                         ->defaultItems(0)
                                         ->addActionLabel('Adicionar Pagamento'),
+                                    Forms\Components\Textarea::make('payments_observation')
+                                        ->label('Observação sobre os Pagamentos')
+                                        ->rows(3)
+                                        ->columnSpanFull(),
                                 ])
                                 ->collapsible(),
                         ]),
@@ -565,9 +648,228 @@ class ServiceOrderResource extends Resource
                                 ->description('O Prazo Judicial é calculado automaticamente com base na Data de Publicação + Dias de Prazo (considerando apenas dias úteis).'),
                         ]),
 
-                    // === ABA 7: TÉCNICO ===
+                    // === ABA 7: DISTRIBUIDOR - PRÉ ANÁLISE ===
+                    Forms\Components\Tabs\Tab::make('Distribuidor - Pré Análise')
+                        ->schema([
+                            Forms\Components\Section::make('Email para Edição')
+                                ->schema([
+                                    Forms\Components\Textarea::make('editable_original_email')
+                                        ->label('Email Original (Editável pela Pré Análise)')
+                                        ->rows(5)
+                                        ->columnSpanFull(),
+                                ])
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Pré-Análise')
+                                ->schema([
+                                    Forms\Components\Textarea::make('pre_analysis_text')
+                                        ->label('Texto da Pré-Análise')
+                                        ->rows(5)
+                                        ->columnSpanFull(),
+                                ])
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Decisões')
+                                ->schema([
+                                    Forms\Components\Select::make('decision_type')
+                                        ->label('Qual? (Sentença/Acórdão/etc)')
+                                        ->options([
+                                            'sentenca' => 'Sentença',
+                                            'acordao_trt' => 'Acórdão TRT',
+                                            'acordao_tst' => 'Acórdão TST',
+                                            'despacho' => 'Despacho',
+                                            'decisao' => 'Decisão',
+                                            'outro' => 'Outro',
+                                        ]),
+                                    Forms\Components\Select::make('decision_summary')
+                                        ->label('Resumo?')
+                                        ->options([
+                                            'procedente' => 'Procedente',
+                                            'parcialmente_procedente' => 'Parcialmente Procedente',
+                                            'improcedente' => 'Improcedente',
+                                            'negado' => 'Negado',
+                                        ]),
+                                    Forms\Components\TextInput::make('decision_id_reference')
+                                        ->label('Qual ID?')
+                                        ->maxLength(255),
+                                    Forms\Components\Textarea::make('decision_disposition')
+                                        ->label('Dispositivo da Decisão')
+                                        ->rows(5)
+                                        ->columnSpanFull(),
+                                ])
+                                ->columns(3)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Atualização/Juros Deferido')
+                                ->schema([
+                                    Forms\Components\Toggle::make('interest_granted')
+                                        ->label('Deferido?'),
+                                    Forms\Components\Select::make('interest_type')
+                                        ->label('Qual?')
+                                        ->options([
+                                            'adc_58' => 'ADC 58',
+                                            'tr_plus_1' => 'TR + 1%',
+                                            'ipca_e' => 'IPCA-E',
+                                            'selic' => 'SELIC',
+                                            'outro' => 'Outro',
+                                        ]),
+                                    Forms\Components\TextInput::make('interest_id_reference')
+                                        ->label('Qual ID?')
+                                        ->maxLength(255),
+                                ])
+                                ->columns(3)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Prescrição Deferida')
+                                ->schema([
+                                    Forms\Components\Toggle::make('prescription_granted')
+                                        ->label('Deferida?'),
+                                    Forms\Components\Select::make('prescription_type')
+                                        ->label('Qual?')
+                                        ->options([
+                                            'quinquenal' => 'Quinquenal',
+                                            'bienal' => 'Bienal',
+                                            'ambas' => 'Ambas',
+                                        ]),
+                                    Forms\Components\TextInput::make('prescription_id_reference')
+                                        ->label('Qual ID?')
+                                        ->maxLength(255),
+                                ])
+                                ->columns(3)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Responsabilidade Cliente')
+                                ->schema([
+                                    Forms\Components\Select::make('client_responsibility_type')
+                                        ->label('Tipo')
+                                        ->options([
+                                            'improcedente' => 'Improcedente',
+                                            'subsidiaria' => 'Subsidiária',
+                                            'solidaria' => 'Solidária',
+                                            'periodo_limitado' => 'Período Limitado',
+                                        ]),
+                                    Forms\Components\DatePicker::make('client_responsibility_period_start')
+                                        ->label('Período De'),
+                                    Forms\Components\DatePicker::make('client_responsibility_period_end')
+                                        ->label('Período Até'),
+                                    Forms\Components\Select::make('client_responsibility_decision_type')
+                                        ->label('Qual? (Sentença/Acórdão)')
+                                        ->options([
+                                            'sentenca' => 'Sentença',
+                                            'acordao' => 'Acórdão',
+                                        ]),
+                                    Forms\Components\TextInput::make('client_responsibility_id_reference')
+                                        ->label('Qual ID?')
+                                        ->maxLength(255),
+                                ])
+                                ->columns(3)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Trânsito em Julgado')
+                                ->schema([
+                                    Forms\Components\Toggle::make('final_judgment')
+                                        ->label('Transitou em Julgado?'),
+                                    Forms\Components\DatePicker::make('final_judgment_date')
+                                        ->label('Qual Data?'),
+                                    Forms\Components\TextInput::make('final_judgment_id_reference')
+                                        ->label('Qual ID?')
+                                        ->maxLength(255),
+                                ])
+                                ->columns(3)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Verbas Deferidas')
+                                ->schema([
+                                    Forms\Components\CheckboxList::make('granted_benefits')
+                                        ->label('Quais?')
+                                        ->options([
+                                            'multa' => 'Multa',
+                                            'adicional_noturno' => 'Adicional Noturno',
+                                            'horas_extras' => 'Horas Extras',
+                                            'ferias' => 'Férias',
+                                            'decimo_terceiro' => '13º Salário',
+                                            'aviso_previo' => 'Aviso Prévio',
+                                            'fgts' => 'FGTS',
+                                            'danos_morais' => 'Danos Morais',
+                                            'insalubridade' => 'Insalubridade',
+                                            'periculosidade' => 'Periculosidade',
+                                        ])
+                                        ->columns(3),
+                                ])
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Defender Cálculo Anterior')
+                                ->schema([
+                                    Forms\Components\Toggle::make('defend_previous_calculation')
+                                        ->label('Defender?'),
+                                    Forms\Components\DatePicker::make('previous_calculation_date')
+                                        ->label('Data'),
+                                    Forms\Components\TextInput::make('previous_calculation_value')
+                                        ->label('Valor')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                    Forms\Components\TextInput::make('previous_calculation_id_reference')
+                                        ->label('Qual ID?')
+                                        ->maxLength(255),
+                                ])
+                                ->columns(4)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Necessita Documentos')
+                                ->schema([
+                                    Forms\Components\Select::make('requires_documents')
+                                        ->label('Necessita?')
+                                        ->options([
+                                            'sim' => 'Sim',
+                                            'nao' => 'Não',
+                                            'analisar' => 'Analisar',
+                                        ]),
+                                    Forms\Components\CheckboxList::make('required_document_types')
+                                        ->label('Qual Tipo?')
+                                        ->options([
+                                            'cartao_ponto' => 'Cartão Ponto',
+                                            'contracheque' => 'Contracheque',
+                                            'autos_integrais' => 'Autos Integrais',
+                                            'extratos_bancarios' => 'Extratos Bancários',
+                                            'ctps' => 'CTPS',
+                                            'contrato_trabalho' => 'Contrato de Trabalho',
+                                        ])
+                                        ->columns(3),
+                                    Forms\Components\TextInput::make('required_documents_period_start')
+                                        ->label('Período De (mm/aaaa)')
+                                        ->mask('99/9999')
+                                        ->maxLength(7),
+                                    Forms\Components\TextInput::make('required_documents_period_end')
+                                        ->label('Período Até (mm/aaaa)')
+                                        ->mask('99/9999')
+                                        ->maxLength(7),
+                                ])
+                                ->columns(2)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Observações')
+                                ->schema([
+                                    Forms\Components\Textarea::make('pre_analysis_observation')
+                                        ->label('Observação da Pré-Análise')
+                                        ->rows(4)
+                                        ->columnSpanFull(),
+                                ])
+                                ->collapsible(),
+                        ]),
+
+                    // === ABA 8: TÉCNICO ===
                     Forms\Components\Tabs\Tab::make('Técnico')
                         ->schema([
+                            Forms\Components\Section::make('Email Editado')
+                                ->schema([
+                                    Forms\Components\Textarea::make('pre_analysis_edited_email')
+                                        ->label('Email Editado pela Pré Análise')
+                                        ->rows(5)
+                                        ->columnSpanFull(),
+                                ])
+                                ->collapsible(),
+
                             Forms\Components\Section::make('Informações Técnicas')
                                 ->schema([
                                     Forms\Components\Toggle::make('client_is_first_defendant')
@@ -576,23 +878,42 @@ class ServiceOrderResource extends Resource
                                         ->label('Nº de Substituídos')
                                         ->numeric(),
                                     Forms\Components\Select::make('work_providence')
-                                        ->label('Providência do Trabalho')
+                                        ->label('Providência do Trabalho Efetuada')
                                         ->options([
-                                            'calculo_liquidacao' => 'Cálculo de Liquidação',
+                                            'parecer' => 'Parecer',
+                                            'calculo' => 'Cálculo',
+                                            'atualizacao' => 'Atualização',
+                                            'nota_explicativa' => 'Nota Explicativa',
                                             'impugnacao' => 'Impugnação',
                                             'manifestacao' => 'Manifestação',
-                                            'recurso' => 'Recurso',
-                                            'parecer' => 'Parecer',
                                             'outra' => 'Outra',
                                         ])
                                         ->searchable(),
                                 ])
                                 ->columns(3),
 
-                            Forms\Components\Section::make('Dados do Cálculo Efetuado')
+                            Forms\Components\Section::make('Concordância com a Parte Adversa')
+                                ->schema([
+                                    Forms\Components\Toggle::make('agreement_with_adverse_party')
+                                        ->label('Há Concordância?'),
+                                    Forms\Components\DatePicker::make('agreement_date')
+                                        ->label('Data'),
+                                    Forms\Components\TextInput::make('agreement_value')
+                                        ->label('Valor')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                    Forms\Components\TextInput::make('agreement_id_reference')
+                                        ->label('Qual ID?')
+                                        ->maxLength(255),
+                                ])
+                                ->columns(4)
+                                ->collapsible(),
+
+                            Forms\Components\Section::make('Dados do Cálculo Apresentado')
                                 ->schema([
                                     Forms\Components\Select::make('performed_index_type')
-                                        ->label('Índice Adotado')
+                                        ->label('Índice Aplicado')
                                         ->options([
                                             'ipca' => 'IPCA',
                                             'inpc' => 'INPC',
@@ -608,11 +929,20 @@ class ServiceOrderResource extends Resource
                                         ->visible(fn (callable $get) => $get('performed_index_type') === 'outro'),
                                     Forms\Components\DatePicker::make('performed_date_updated')
                                         ->label('Data Atualizado'),
-                                    Forms\Components\TextInput::make('performed_value_updated')
-                                        ->label('Valor Atualizado')
+                                    Forms\Components\TextInput::make('presented_gross_value')
+                                        ->label('Valor Bruto')
                                         ->numeric()
                                         ->prefix('R$')
                                         ->step(0.01),
+                                    Forms\Components\TextInput::make('presented_net_value')
+                                        ->label('Valor Líquido')
+                                        ->numeric()
+                                        ->prefix('R$')
+                                        ->step(0.01),
+                                    Forms\Components\Textarea::make('presented_calculation_observation')
+                                        ->label('Observação sobre o Trabalho Entregue')
+                                        ->rows(3)
+                                        ->columnSpanFull(),
                                 ])
                                 ->columns(2)
                                 ->collapsible(),
@@ -649,9 +979,19 @@ class ServiceOrderResource extends Resource
                                         ->addActionLabel('Adicionar Pagamento'),
                                 ])
                                 ->collapsible(),
+
+                            Forms\Components\Section::make('Comunicação com o Cliente')
+                                ->schema([
+                                    Forms\Components\Textarea::make('client_email_suggestion')
+                                        ->label('Sugestão de Email para o Cliente')
+                                        ->rows(6)
+                                        ->columnSpanFull()
+                                        ->helperText('Rascunho do email que será enviado ao cliente'),
+                                ])
+                                ->collapsible(),
                         ]),
 
-                    // === ABA 8: FATURAMENTO ===
+                    // === ABA 9: FATURAMENTO ===
                     Forms\Components\Tabs\Tab::make('Faturamento')
                         ->schema([
                             Forms\Components\Section::make('Dados do Contrato')
@@ -1018,7 +1358,8 @@ class ServiceOrderResource extends Resource
                         )
                     ),
 
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label('Editar'),
 
                 Tables\Actions\Action::make('view_history')
                     ->label('Histórico')
@@ -1063,7 +1404,8 @@ class ServiceOrderResource extends Resource
                                 ->success()
                                 ->send();
                         }),
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label('Excluir selecionados'),
                 ]),
             ])
             ->defaultSort('created_at', 'desc')

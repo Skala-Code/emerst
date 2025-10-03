@@ -13,6 +13,7 @@ class Lawyer extends Model
         'user_id',
         'office_id',
         'name',
+        'cpf',
         'oab',
         'email',
         'phone',

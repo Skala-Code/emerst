@@ -89,6 +89,15 @@ class Process extends Model
         'subjects',
         'process_class',
         'process_format',
+        // Novos campos judiciais da API
+        'classe',
+        'orgao_julgador',
+        'segredo_justica',
+        'justica_gratuita',
+        'distribuido_em',
+        'autuado_em',
+        'valor_da_causa',
+        'juizo_digital',
     ];
 
     protected $casts = [
@@ -123,6 +132,13 @@ class Process extends Model
         'case_value' => 'decimal:2',
         'free_justice_granted' => 'boolean',
         'subjects' => 'array',
+        // Campos da API judicial
+        'segredo_justica' => 'boolean',
+        'justica_gratuita' => 'boolean',
+        'distribuido_em' => 'datetime',
+        'autuado_em' => 'datetime',
+        'valor_da_causa' => 'decimal:2',
+        'juizo_digital' => 'boolean',
     ];
 
     public function company(): BelongsTo
@@ -152,17 +168,42 @@ class Process extends Model
 
     public function activeParties(): HasMany
     {
-        return $this->hasMany(ProcessParty::class)->where('party_type', 'active');
+        return $this->hasMany(ProcessParty::class)->where('polo', 'ATIVO')->whereNull('parent_id');
     }
 
     public function passiveParties(): HasMany
     {
-        return $this->hasMany(ProcessParty::class)->where('party_type', 'passive');
+        return $this->hasMany(ProcessParty::class)->where('polo', 'PASSIVO')->whereNull('parent_id');
     }
 
     public function interestedParties(): HasMany
     {
-        return $this->hasMany(ProcessParty::class)->where('party_type', 'interested');
+        return $this->hasMany(ProcessParty::class)->where('polo', 'TERCEIROS')->whereNull('parent_id');
+    }
+
+    public function processSubjects(): HasMany
+    {
+        return $this->hasMany(ProcessSubject::class);
+    }
+
+    public function mainSubject(): HasMany
+    {
+        return $this->hasMany(ProcessSubject::class)->where('principal', true);
+    }
+
+    public function movements(): HasMany
+    {
+        return $this->hasMany(ProcessMovement::class)->whereNull('parent_id')->orderBy('data', 'desc');
+    }
+
+    public function dispatches(): HasMany
+    {
+        return $this->hasMany(ProcessDispatch::class)->orderBy('data_criacao', 'desc');
+    }
+
+    public function pendingDispatches(): HasMany
+    {
+        return $this->hasMany(ProcessDispatch::class)->where('fechado', false);
     }
 
 }

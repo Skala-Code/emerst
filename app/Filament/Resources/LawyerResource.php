@@ -64,6 +64,10 @@ class LawyerResource extends Resource
                     ->label('Nome')
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('cpf')
+                    ->label('CPF')
+                    ->mask('999.999.999-99')
+                    ->maxLength(255),
                 Forms\Components\TextInput::make('oab')
                     ->label('OAB')
                     ->unique(ignoreRecord: true)

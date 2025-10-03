@@ -13,7 +13,19 @@ class EditServiceOrder extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Excluir')
+                ->successNotificationTitle('Ordem de serviço excluída com sucesso!'),
         ];
+    }
+
+    public function getTitle(): string
+    {
+        return 'Editar Ordem de Serviço';
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Ordem de serviço atualizada com sucesso!';
     }
 }
