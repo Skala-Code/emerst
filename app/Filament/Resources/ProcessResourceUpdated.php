@@ -97,6 +97,7 @@ class ProcessResourceUpdated extends Resource
                             'suspended' => 'Suspenso',
                             'completed' => 'Concluído',
                             'archived' => 'Arquivado',
+                            'aguardando_api_trt' => 'Aguardando API TRT',
                         ])
                         ->default('active')
                         ->required(),
@@ -390,12 +391,14 @@ class ProcessResourceUpdated extends Resource
                         'warning' => 'suspended',
                         'primary' => 'completed',
                         'secondary' => 'archived',
+                        'info' => 'aguardando_api_trt',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'active' => 'Ativo',
                         'suspended' => 'Suspenso',
                         'completed' => 'Concluído',
                         'archived' => 'Arquivado',
+                        'aguardando_api_trt' => 'Aguardando API TRT',
                         default => $state,
                     }),
                 Tables\Columns\BadgeColumn::make('procedural_phase')
@@ -448,6 +451,7 @@ class ProcessResourceUpdated extends Resource
                         'suspended' => 'Suspenso',
                         'completed' => 'Concluído',
                         'archived' => 'Arquivado',
+                        'aguardando_api_trt' => 'Aguardando API TRT',
                     ]),
                 Tables\Filters\SelectFilter::make('procedural_phase')
                     ->label('Fase Processual')

@@ -44,6 +44,14 @@ class PostResource extends Resource
     protected static ?int $navigationSort = 0;
 
     /**
+     * Determine if the resource should be registered in navigation.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
+    /**
      * Get the navigation badge for the resource.
      */
     public static function getNavigationBadge(): ?string

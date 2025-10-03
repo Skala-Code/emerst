@@ -10,10 +10,13 @@ class ListOffices extends ListRecords
 {
     protected static string $resource = OfficeResource::class;
 
+    protected static ?string $title = 'Escritórios';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Novo Escritório'),
         ];
     }
 }

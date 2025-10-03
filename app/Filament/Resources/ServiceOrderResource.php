@@ -53,15 +53,6 @@ class ServiceOrderResource extends Resource
                     // === ABA 1: DADOS DA SOLICITAÇÃO ===
                     Forms\Components\Tabs\Tab::make('Dados da Solicitação')
                         ->schema([
-                            Forms\Components\Section::make('Email Original')
-                                ->schema([
-                                    Forms\Components\Textarea::make('email_original')
-                                        ->label('Email Original Recebido')
-                                        ->rows(5)
-                                        ->columnSpanFull(),
-                                ])
-                                ->collapsible(),
-
                             Forms\Components\Section::make('Dados do Solicitante')
                                 ->schema([
                                     Forms\Components\DateTimePicker::make('request_datetime')
@@ -651,15 +642,6 @@ class ServiceOrderResource extends Resource
                     // === ABA 7: DISTRIBUIDOR - PRÉ ANÁLISE ===
                     Forms\Components\Tabs\Tab::make('Distribuidor - Pré Análise')
                         ->schema([
-                            Forms\Components\Section::make('Email para Edição')
-                                ->schema([
-                                    Forms\Components\Textarea::make('editable_original_email')
-                                        ->label('Email Original (Editável pela Pré Análise)')
-                                        ->rows(5)
-                                        ->columnSpanFull(),
-                                ])
-                                ->collapsible(),
-
                             Forms\Components\Section::make('Pré-Análise')
                                 ->schema([
                                     Forms\Components\Textarea::make('pre_analysis_text')
@@ -861,15 +843,6 @@ class ServiceOrderResource extends Resource
                     // === ABA 8: TÉCNICO ===
                     Forms\Components\Tabs\Tab::make('Técnico')
                         ->schema([
-                            Forms\Components\Section::make('Email Editado')
-                                ->schema([
-                                    Forms\Components\Textarea::make('pre_analysis_edited_email')
-                                        ->label('Email Editado pela Pré Análise')
-                                        ->rows(5)
-                                        ->columnSpanFull(),
-                                ])
-                                ->collapsible(),
-
                             Forms\Components\Section::make('Informações Técnicas')
                                 ->schema([
                                     Forms\Components\Toggle::make('client_is_first_defendant')
@@ -977,16 +950,6 @@ class ServiceOrderResource extends Resource
                                         ->columns(3)
                                         ->defaultItems(0)
                                         ->addActionLabel('Adicionar Pagamento'),
-                                ])
-                                ->collapsible(),
-
-                            Forms\Components\Section::make('Comunicação com o Cliente')
-                                ->schema([
-                                    Forms\Components\Textarea::make('client_email_suggestion')
-                                        ->label('Sugestão de Email para o Cliente')
-                                        ->rows(6)
-                                        ->columnSpanFull()
-                                        ->helperText('Rascunho do email que será enviado ao cliente'),
                                 ])
                                 ->collapsible(),
                         ]),

@@ -74,7 +74,6 @@ class ServiceOrder extends Model
         'billing_invoice_status',
         'billing_reconciliation_status',
         // === DADOS DA SOLICITAÇÃO ===
-        'email_original',
         'request_datetime',
         'requester_name',
         'requester_phone',
@@ -89,7 +88,6 @@ class ServiceOrder extends Model
         'requested_time',
         'requester_observation',
         // === DISTRIBUIDOR - PRÉ ANÁLISE ===
-        'editable_original_email',
         'pre_analysis_text',
         'decision_type',
         'decision_summary',
@@ -122,7 +120,6 @@ class ServiceOrder extends Model
         'calculation_observation',
         'payments_observation',
         // === TÉCNICO - CONCORDÂNCIA ===
-        'pre_analysis_edited_email',
         'agreement_with_adverse_party',
         'agreement_date',
         'agreement_value',
@@ -133,8 +130,6 @@ class ServiceOrder extends Model
         'presented_gross_value',
         'presented_net_value',
         'presented_calculation_observation',
-        // === COMUNICAÇÃO ===
-        'client_email_suggestion',
         // === VERBAS TRABALHISTAS ===
         // Horas Extras
         'special_interval_operators',

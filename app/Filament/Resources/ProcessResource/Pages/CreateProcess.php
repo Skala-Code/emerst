@@ -8,4 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProcess extends CreateRecord
 {
     protected static string $resource = ProcessResource::class;
+
+    protected static ?string $title = 'Criar Processo';
 }

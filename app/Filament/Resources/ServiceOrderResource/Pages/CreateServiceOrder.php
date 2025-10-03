@@ -9,14 +9,11 @@ class CreateServiceOrder extends CreateRecord
 {
     protected static string $resource = ServiceOrderResource::class;
 
+    protected static ?string $title = 'Criar Ordem de Serviço';
+
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
-    }
-
-    public function getTitle(): string
-    {
-        return 'Criar Ordem de Serviço';
     }
 
     protected function getCreatedNotificationTitle(): ?string

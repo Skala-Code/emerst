@@ -190,6 +190,7 @@ class ProcessResource extends Resource
                             'suspended' => 'Suspenso',
                             'archived' => 'Arquivado',
                             'completed' => 'Concluído',
+                            'aguardando_api_trt' => 'Aguardando API TRT',
                         ])
                         ->default('active')
                         ->required(),
@@ -629,12 +630,14 @@ class ProcessResource extends Resource
                         'warning' => 'suspended',
                         'secondary' => 'archived',
                         'primary' => 'completed',
+                        'info' => 'aguardando_api_trt',
                     ])
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'active' => 'Ativo',
                         'suspended' => 'Suspenso',
                         'archived' => 'Arquivado',
                         'completed' => 'Concluído',
+                        'aguardando_api_trt' => 'Aguardando API TRT',
                         default => $state,
                     }),
                 Tables\Columns\TextColumn::make('start_date')
@@ -676,6 +679,7 @@ class ProcessResource extends Resource
                         'suspended' => 'Suspenso',
                         'archived' => 'Arquivado',
                         'completed' => 'Concluído',
+                        'aguardando_api_trt' => 'Aguardando API TRT',
                     ]),
                 Tables\Filters\Filter::make('has_deadline')
                     ->label('Com Prazo')

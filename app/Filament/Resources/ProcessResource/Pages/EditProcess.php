@@ -10,10 +10,13 @@ class EditProcess extends EditRecord
 {
     protected static string $resource = ProcessResource::class;
 
+    protected static ?string $title = 'Editar Processo';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 }

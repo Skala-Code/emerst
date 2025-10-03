@@ -10,10 +10,13 @@ class EditLawyer extends EditRecord
 {
     protected static string $resource = LawyerResource::class;
 
+    protected static ?string $title = 'Editar Advogado';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\DeleteAction::make()
+                ->label('Excluir'),
         ];
     }
 }

@@ -10,10 +10,13 @@ class ListProcesses extends ListRecords
 {
     protected static string $resource = ProcessResource::class;
 
+    protected static ?string $title = 'Processos';
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Novo Processo'),
         ];
     }
 }

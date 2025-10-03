@@ -12,6 +12,14 @@ class ActivityResource extends BaseResource
     protected static ?int $navigationSort = 1;
 
     /**
+     * Determine if the resource should be registered in navigation.
+     */
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
+    /**
      * Get the navigation badge for the resource.
      */
     public static function getNavigationBadge(): ?string

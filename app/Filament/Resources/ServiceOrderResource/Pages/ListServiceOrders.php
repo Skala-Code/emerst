@@ -10,16 +10,13 @@ class ListServiceOrders extends ListRecords
 {
     protected static string $resource = ServiceOrderResource::class;
 
+    protected static ?string $title = 'Ordens de Serviço';
+
     protected function getHeaderActions(): array
     {
         return [
             Actions\CreateAction::make()
                 ->label('Nova Ordem de Serviço'),
         ];
-    }
-
-    public function getTitle(): string
-    {
-        return 'Ordens de Serviço';
     }
 }

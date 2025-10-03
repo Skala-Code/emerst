@@ -52,16 +52,19 @@ class AdminPanelProvider extends PanelProvider
                     ->pluralLabel('Media Library')
                     ->navigationIcon('heroicon-o-photo')
                     ->navigationGroup('Media')
-                    ->navigationCountBadge(),
+                    ->navigationCountBadge()
+                    ->registerNavigation(false),
 
                 FilamentJobsMonitorPlugin::make()
                     ->navigationCountBadge()
-                    ->navigationGroup('Settings'),
+                    ->navigationGroup('Settings')
+                    ->navigationIcon('heroicon-o-queue-list'),
 
                 FilamentPeekPlugin::make()
                     ->disablePluginStyles(),
 
-                FilamentExceptionsPlugin::make(),
+                // FilamentExceptionsPlugin::make()
+                //     ->shouldRegisterNavigation(false),
 
                 GravatarPlugin::make(),
             ])
@@ -74,9 +77,6 @@ class AdminPanelProvider extends PanelProvider
                 'Administração',
                 'Documentos',
                 'Configurações',
-                'Collections',
-                'Media',
-                'Settings',
             ])
             ->colors([
                 'primary' => Color::Blue,

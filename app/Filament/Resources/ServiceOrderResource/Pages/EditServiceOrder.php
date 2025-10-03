@@ -10,6 +10,8 @@ class EditServiceOrder extends EditRecord
 {
     protected static string $resource = ServiceOrderResource::class;
 
+    protected static ?string $title = 'Editar Ordem de Serviço';
+
     protected function getHeaderActions(): array
     {
         return [
@@ -17,11 +19,6 @@ class EditServiceOrder extends EditRecord
                 ->label('Excluir')
                 ->successNotificationTitle('Ordem de serviço excluída com sucesso!'),
         ];
-    }
-
-    public function getTitle(): string
-    {
-        return 'Editar Ordem de Serviço';
     }
 
     protected function getSavedNotificationTitle(): ?string
