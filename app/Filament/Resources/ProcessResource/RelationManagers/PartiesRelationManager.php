@@ -120,13 +120,15 @@ class PartiesRelationManager extends RelationManager
                     ->sortable()
                     ->limit(40),
 
-                Tables\Columns\BadgeColumn::make('polo')
+                Tables\Columns\TextColumn::make('polo')
                     ->label('Polo')
-                    ->colors([
-                        'success' => 'ATIVO',
-                        'danger' => 'PASSIVO',
-                        'warning' => 'TERCEIROS',
-                    ])
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'ATIVO' => 'success',
+                        'PASSIVO' => 'danger',
+                        'TERCEIROS' => 'warning',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'ATIVO' => 'Polo Ativo',
                         'PASSIVO' => 'Polo Passivo',

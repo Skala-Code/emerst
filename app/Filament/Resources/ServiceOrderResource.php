@@ -1049,16 +1049,18 @@ class ServiceOrderResource extends Resource
                     ->default('Não atribuído')
                     ->color(fn ($state) => $state === 'Não atribuído' ? 'warning' : 'primary'),
 
-                Tables\Columns\BadgeColumn::make('workflow_stage')
+                Tables\Columns\TextColumn::make('workflow_stage')
                     ->label('Estágio')
-                    ->colors([
-                        'secondary' => 'created',
-                        'warning' => 'assigned',
-                        'primary' => 'in_progress',
-                        'info' => 'review',
-                        'success' => 'completed',
-                        'danger' => 'rejected',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'created' => 'gray',
+                        'assigned' => 'warning',
+                        'in_progress' => 'info',
+                        'review' => 'info',
+                        'completed' => 'success',
+                        'rejected' => 'danger',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'created' => 'Criada',
                         'assigned' => 'Atribuída',
@@ -1069,14 +1071,16 @@ class ServiceOrderResource extends Resource
                         default => $state,
                     }),
 
-                Tables\Columns\BadgeColumn::make('priority')
+                Tables\Columns\TextColumn::make('priority')
                     ->label('Prioridade')
-                    ->colors([
-                        'secondary' => 'low',
-                        'primary' => 'medium',
-                        'warning' => 'high',
-                        'danger' => 'urgent',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'low' => 'gray',
+                        'medium' => 'info',
+                        'high' => 'warning',
+                        'urgent' => 'danger',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'low' => 'Baixa',
                         'medium' => 'Média',

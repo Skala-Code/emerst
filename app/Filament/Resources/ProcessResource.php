@@ -627,15 +627,17 @@ class ProcessResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'success' => 'active',
-                        'warning' => 'suspended',
-                        'secondary' => 'archived',
-                        'primary' => 'completed',
-                        'info' => 'aguardando_api_trt',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'suspended' => 'warning',
+                        'archived' => 'gray',
+                        'completed' => 'info',
+                        'aguardando_api_trt' => 'info',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'active' => 'Ativo',
                         'suspended' => 'Suspenso',

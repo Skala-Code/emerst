@@ -10,7 +10,6 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\Action as TableAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -65,12 +64,14 @@ class TrtQueue extends Page implements HasTable
                     ->sortable()
                     ->limit(30),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'info' => 'aguardando_api_trt',
-                        'warning' => 'suspended',
-                    ]),
+                    ->badge()
+                    ->color(fn ($state) => match ($state) {
+                        'aguardando_api_trt' => 'info',
+                        'suspended' => 'warning',
+                        default => 'gray',
+                    }),
 
                 TextColumn::make('trt_api_attempts')
                     ->label('Tentativas')

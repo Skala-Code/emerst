@@ -384,15 +384,17 @@ class ProcessResourceUpdated extends Resource
                 Tables\Columns\TextColumn::make('lawyer.name')
                     ->label('Advogado')
                     ->searchable(),
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Status')
-                    ->colors([
-                        'success' => 'active',
-                        'warning' => 'suspended',
-                        'primary' => 'completed',
-                        'secondary' => 'archived',
-                        'info' => 'aguardando_api_trt',
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'active' => 'success',
+                        'suspended' => 'warning',
+                        'completed' => 'info',
+                        'archived' => 'gray',
+                        'aguardando_api_trt' => 'info',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'active' => 'Ativo',
                         'suspended' => 'Suspenso',
@@ -401,8 +403,9 @@ class ProcessResourceUpdated extends Resource
                         'aguardando_api_trt' => 'Aguardando API TRT',
                         default => $state,
                     }),
-                Tables\Columns\BadgeColumn::make('procedural_phase')
+                Tables\Columns\TextColumn::make('procedural_phase')
                     ->label('Fase')
+                    ->badge()
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'inicial' => 'Inicial',
                         'contestacao' => 'Contestação',
@@ -421,13 +424,15 @@ class ProcessResourceUpdated extends Resource
                     ->label('Provisão Atual')
                     ->money('BRL')
                     ->sortable(),
-                Tables\Columns\BadgeColumn::make('loss_status_current')
+                Tables\Columns\TextColumn::make('loss_status_current')
                     ->label('Status de Perda')
-                    ->colors([
-                        'danger' => 'provavel',
-                        'warning' => 'possivel',
-                        'success' => 'remota',
-                    ])
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'provavel' => 'danger',
+                        'possivel' => 'warning',
+                        'remota' => 'success',
+                        default => 'gray',
+                    })
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'provavel' => 'Provável',
                         'possivel' => 'Possível',
