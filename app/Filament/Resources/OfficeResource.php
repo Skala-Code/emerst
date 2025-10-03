@@ -22,22 +22,22 @@ class OfficeResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasPermissionTo('view_offices') ?? false;
+        return true;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasPermissionTo('create_offices') ?? false;
+        return true;
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()?->hasPermissionTo('edit_offices') ?? false;
+        return true;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->hasPermissionTo('delete_offices') ?? false;
+        return true;
     }
 
     public static function form(Form $form): Form

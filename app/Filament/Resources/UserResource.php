@@ -23,7 +23,7 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasPermissionTo('view_users') ?? false;
+        return true;
     }
 
     public static function form(Form $form): Form

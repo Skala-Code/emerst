@@ -22,22 +22,22 @@ class CustomTabResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasPermissionTo('view_custom_tabs') ?? false;
+        return true;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasPermissionTo('create_custom_tabs') ?? false;
+        return true;
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()?->hasPermissionTo('edit_custom_tabs') ?? false;
+        return true;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->hasPermissionTo('delete_custom_tabs') ?? false;
+        return true;
     }
 
     public static function form(Form $form): Form

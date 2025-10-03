@@ -25,22 +25,22 @@ class ProcessResourceUpdated extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasPermissionTo('view_processes') ?? false;
+        return true;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasPermissionTo('create_processes') ?? false;
+        return true;
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()?->hasPermissionTo('edit_processes') ?? false;
+        return true;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->hasPermissionTo('delete_processes') ?? false;
+        return true;
     }
 
     public static function form(Form $form): Form

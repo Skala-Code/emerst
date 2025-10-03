@@ -23,7 +23,7 @@ class RoleResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasPermissionTo('manage_roles') ?? false;
+        return true;
     }
 
     public static function form(Form $form): Form

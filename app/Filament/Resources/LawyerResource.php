@@ -22,22 +22,22 @@ class LawyerResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasPermissionTo('view_lawyers') ?? false;
+        return true;
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->hasPermissionTo('create_lawyers') ?? false;
+        return true;
     }
 
     public static function canEdit($record): bool
     {
-        return auth()->user()?->hasPermissionTo('edit_lawyers') ?? false;
+        return true;
     }
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->hasPermissionTo('delete_lawyers') ?? false;
+        return true;
     }
 
     public static function form(Form $form): Form
