@@ -98,6 +98,15 @@ class Process extends Model
         'autuado_em',
         'valor_da_causa',
         'juizo_digital',
+        // === CAMPOS DA API TRT ===
+        'trt_number',
+        'trt_api_data',
+        'trt_api_synced_at',
+        'trt_reclamantes',
+        'trt_reclamados',
+        'trt_outros_interessados',
+        'trt_api_attempts',
+        'trt_api_error',
     ];
 
     protected $casts = [
@@ -139,6 +148,12 @@ class Process extends Model
         'autuado_em' => 'datetime',
         'valor_da_causa' => 'decimal:2',
         'juizo_digital' => 'boolean',
+        // === CAMPOS DA API TRT ===
+        'trt_api_data' => 'array',
+        'trt_api_synced_at' => 'datetime',
+        'trt_reclamantes' => 'array',
+        'trt_reclamados' => 'array',
+        'trt_outros_interessados' => 'array',
     ];
 
     public function company(): BelongsTo

@@ -3,12 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProcessResource\Pages;
+use App\Jobs\ProcessTrtData;
 use App\Models\Lawyer;
 use App\Models\Office;
 use App\Models\Process;
 use App\Services\CustomFieldService;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -689,6 +691,24 @@ class ProcessResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->where('free_justice_granted', true)),
             ])
             ->actions([
+                Tables\Actions\Action::make('sync_trt')
+                    ->label('Sincronizar TRT')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalHeading('Sincronizar com API TRT?')
+                    ->modalDescription(fn (Process $record) => "Isso irá consultar a API TRT para o processo {$record->number}. Deseja continuar?")
+                    ->action(function (Process $record) {
+                        // Despacha o job
+                        ProcessTrtData::dispatch($record);
+
+                        Notification::make()
+                            ->title('Job despachado!')
+                            ->body("Processo {$record->number} adicionado à fila de sincronização TRT.")
+                            ->success()
+                            ->send();
+                    })
+                    ->visible(fn (Process $record) => in_array($record->status, ['aguardando_api_trt', 'active'])),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
             ])
