@@ -57,7 +57,8 @@ class ServiceOrderResource extends Resource
                                 ->schema([
                                     Forms\Components\Select::make('process_id')
                                         ->label('Processo')
-                                        ->relationship('process', 'title')
+                                        ->relationship('process', 'number')
+                                        ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name)
                                         ->required()
                                         ->searchable()
                                         ->preload()
@@ -1035,11 +1036,11 @@ class ServiceOrderResource extends Resource
                         return strlen($state) > 50 ? $state : null;
                     }),
 
-                Tables\Columns\TextColumn::make('process.title')
+                Tables\Columns\TextColumn::make('process.display_name')
                     ->label('Processo')
-                    ->searchable()
+                    ->searchable(['number', 'title'])
                     ->sortable()
-                    ->limit(30)
+                    ->limit(50)
                     ->toggleable(),
 
                 Tables\Columns\TextColumn::make('currentResponsible.name')
@@ -1187,7 +1188,8 @@ class ServiceOrderResource extends Resource
 
                 Tables\Filters\SelectFilter::make('process')
                     ->label('Processo')
-                    ->relationship('process', 'title')
+                    ->relationship('process', 'number')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->display_name)
                     ->searchable()
                     ->preload(),
             ])

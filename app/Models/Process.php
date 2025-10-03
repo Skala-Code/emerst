@@ -156,6 +156,14 @@ class Process extends Model
         'trt_outros_interessados' => 'array',
     ];
 
+    // Accessor para exibição formatada
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->title
+            ? "{$this->number} - {$this->title}"
+            : $this->number;
+    }
+
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
