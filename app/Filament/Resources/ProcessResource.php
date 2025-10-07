@@ -89,36 +89,29 @@ class ProcessResource extends Resource
 
                                 Forms\Components\TextInput::make('trt')
                                     ->label('TRT')
-                                    ->maxLength(2)
-                                    ->disabled(),
+                                    ->maxLength(2),
 
                                 Forms\Components\TextInput::make('classe')
-                                    ->label('Classe')
-                                    ->disabled(),
+                                    ->label('Classe'),
 
                                 Forms\Components\TextInput::make('orgao_julgador')
-                                    ->label('Órgão Julgador')
-                                    ->disabled(),
+                                    ->label('Órgão Julgador'),
 
                                 Forms\Components\TextInput::make('valor_causa')
-                                    ->label('Valor da Causa')
-                                    ->disabled(),
+                                    ->label('Valor da Causa'),
 
                                 Forms\Components\DateTimePicker::make('autuado')
                                     ->label('Data de Autuação')
-                                    ->displayFormat('d/m/Y H:i')
-                                    ->disabled(),
+                                    ->displayFormat('d/m/Y H:i'),
 
                                 Forms\Components\DateTimePicker::make('distribuido')
                                     ->label('Data de Distribuição')
-                                    ->displayFormat('d/m/Y H:i')
-                                    ->disabled(),
+                                    ->displayFormat('d/m/Y H:i'),
                             ]),
 
                         Forms\Components\Textarea::make('assuntos')
                             ->label('Assuntos')
                             ->rows(3)
-                            ->disabled()
                             ->columnSpanFull(),
                     ]),
 
@@ -128,8 +121,7 @@ class ProcessResource extends Resource
                             ->label('Reclamantes')
                             ->schema([
                                 Forms\Components\TextInput::make('nome')
-                                    ->label('Nome')
-                                    ->required(),
+                                    ->label('Nome'),
                                 Forms\Components\TextInput::make('cpf_cnpj')
                                     ->label('CPF/CNPJ'),
                                 Forms\Components\TagsInput::make('advogados')
@@ -138,15 +130,13 @@ class ProcessResource extends Resource
                             ])
                             ->columns(3)
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => $state['nome'] ?? null)
-                            ->disabled(),
+                            ->itemLabel(fn (array $state): ?string => $state['nome'] ?? null),
 
                         Forms\Components\Repeater::make('reclamados')
                             ->label('Reclamados')
                             ->schema([
                                 Forms\Components\TextInput::make('nome')
-                                    ->label('Nome')
-                                    ->required(),
+                                    ->label('Nome'),
                                 Forms\Components\TextInput::make('cpf_cnpj')
                                     ->label('CPF/CNPJ'),
                                 Forms\Components\TagsInput::make('advogados')
@@ -155,15 +145,13 @@ class ProcessResource extends Resource
                             ])
                             ->columns(3)
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => $state['nome'] ?? null)
-                            ->disabled(),
+                            ->itemLabel(fn (array $state): ?string => $state['nome'] ?? null),
 
                         Forms\Components\Repeater::make('outros_interessados')
                             ->label('Outros Interessados')
                             ->schema([
                                 Forms\Components\TextInput::make('nome')
-                                    ->label('Nome')
-                                    ->required(),
+                                    ->label('Nome'),
                                 Forms\Components\TextInput::make('cpf_cnpj')
                                     ->label('CPF/CNPJ'),
                                 Forms\Components\TextInput::make('tipo')
@@ -172,26 +160,22 @@ class ProcessResource extends Resource
                             ])
                             ->columns(3)
                             ->collapsed()
-                            ->itemLabel(fn (array $state): ?string => ($state['nome'] ?? '') . ($state['tipo'] ? ' (' . $state['tipo'] . ')' : ''))
-                            ->disabled(),
+                            ->itemLabel(fn (array $state): ?string => ($state['nome'] ?? '') . ($state['tipo'] ? ' (' . $state['tipo'] . ')' : '')),
                     ])
                     ->collapsible(),
 
                 Forms\Components\Section::make('Status da Sincronização')
                     ->schema([
                         Forms\Components\Toggle::make('sincronizado')
-                            ->label('Sincronizado com API')
-                            ->disabled(),
+                            ->label('Sincronizado com API'),
 
                         Forms\Components\DateTimePicker::make('ultima_atualizacao_api')
                             ->label('Última Atualização via API')
-                            ->displayFormat('d/m/Y H:i:s')
-                            ->disabled(),
+                            ->displayFormat('d/m/Y H:i:s'),
 
                         Forms\Components\Textarea::make('error')
                             ->label('Erro na Sincronização')
                             ->rows(2)
-                            ->disabled()
                             ->visible(fn ($state) => !empty($state)),
                     ])
                     ->columns(2)
