@@ -3,720 +3,374 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProcessResource\Pages;
-use App\Filament\Resources\ProcessResource\RelationManagers;
-use App\Jobs\ProcessTrtData;
-use App\Models\Lawyer;
-use App\Models\Office;
 use App\Models\Process;
-use App\Services\CustomFieldService;
+use App\Services\TrtApiService;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
+use Illuminate\Support\HtmlString;
 
 class ProcessResource extends Resource
 {
     protected static ?string $model = Process::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-scale';
 
-    protected static ?string $navigationLabel = 'Processos';
+    protected static ?string $navigationLabel = 'Processos TRT';
 
-    protected static ?string $navigationGroup = 'Processos';
+    protected static ?string $modelLabel = 'Processo';
 
-    public static function canViewAny(): bool
-    {
-        return true;
-    }
+    protected static ?string $pluralModelLabel = 'Processos';
 
-    public static function canCreate(): bool
-    {
-        return true;
-    }
+    protected static ?string $navigationGroup = 'Jurídico';
 
-    public static function canEdit($record): bool
-    {
-        return true;
-    }
-
-    public static function canDelete($record): bool
-    {
-        return true;
-    }
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
-        return $form->schema([
-            // === SEÇÃO 1: INFORMAÇÕES BÁSICAS ===
-            Forms\Components\Section::make('Informações Básicas')
-                ->schema([
-                    Forms\Components\Select::make('company_id')
-                        ->label('Empresa')
-                        ->relationship('company', 'name')
-                        ->required()
-                        ->searchable()
-                        ->preload()
-                        ->reactive()
-                        ->afterStateUpdated(fn (callable $set) => $set('office_id', null)),
-                    Forms\Components\Select::make('office_id')
-                        ->label('Escritório')
-                        ->options(function (callable $get) {
-                            $companyId = $get('company_id');
-                            if (! $companyId) {
-                                return [];
-                            }
+        return $form
+            ->schema([
+                Forms\Components\Section::make('Dados do Processo')
+                    ->schema([
+                        Forms\Components\Grid::make(2)
+                            ->schema([
+                                Forms\Components\TextInput::make('processo')
+                                    ->label('Número do Processo')
+                                    ->required()
+                                    ->unique(ignoreRecord: true)
+                                    ->placeholder('0000000-00.0000.0.00.0000')
+                                    ->helperText('Formato: NNNNNNN-DD.AAAA.J.TR.OOOO')
+                                    ->suffixAction(
+                                        Forms\Components\Actions\Action::make('buscarApi')
+                                            ->label('Buscar na API')
+                                            ->icon('heroicon-o-arrow-path')
+                                            ->action(function ($state, $set) {
+                                                if (!$state) {
+                                                    Notification::make()
+                                                        ->title('Informe o número do processo')
+                                                        ->danger()
+                                                        ->send();
+                                                    return;
+                                                }
 
-                            return Office::where('company_id', $companyId)->pluck('name', 'id');
-                        })
-                        ->required()
-                        ->searchable()
-                        ->reactive()
-                        ->afterStateUpdated(fn (callable $set) => $set('lawyer_id', null)),
-                    Forms\Components\Select::make('lawyer_id')
-                        ->label('Advogado Responsável')
-                        ->options(function (callable $get) {
-                            $officeId = $get('office_id');
-                            if (! $officeId) {
-                                return [];
-                            }
+                                                $trtService = new TrtApiService();
+                                                $dados = $trtService->consultarProcesso($state);
 
-                            return Lawyer::where('office_id', $officeId)->pluck('name', 'id');
-                        })
-                        ->searchable(),
-                ])
-                ->columns(3),
+                                                if ($dados) {
+                                                    // Preenche todos os campos com os dados da API
+                                                    $set('trt', $dados['trt'] ?? null);
+                                                    $set('classe', $dados['classe'] ?? null);
+                                                    $set('orgao_julgador', $dados['orgao_julgador'] ?? null);
+                                                    $set('valor_causa', $dados['valor_causa'] ?? null);
+                                                    $set('autuado', $dados['autuado'] ?? null);
+                                                    $set('distribuido', $dados['distribuido'] ?? null);
+                                                    $set('assuntos', $dados['assuntos'] ?? null);
+                                                    $set('reclamantes', $dados['reclamantes'] ?? []);
+                                                    $set('reclamados', $dados['reclamados'] ?? []);
+                                                    $set('outros_interessados', $dados['outros_interessados'] ?? []);
+                                                    $set('sincronizado', true);
+                                                    $set('ultima_atualizacao_api', now());
 
-            // === SEÇÃO 2: DADOS DO PROCESSO ===
-            Forms\Components\Section::make('Dados do Processo')
-                ->schema([
-                    Forms\Components\TextInput::make('number')
-                        ->label('Número do Processo')
-                        ->required()
-                        ->unique(ignoreRecord: true)
-                        ->maxLength(255)
-                        ->columnSpan(1),
-                    Forms\Components\TextInput::make('linked_process_number')
-                        ->label('Número do Processo Vinculado')
-                        ->maxLength(255)
-                        ->columnSpan(1),
-                    Forms\Components\TextInput::make('folder_number')
-                        ->label('Número da Pasta')
-                        ->maxLength(255)
-                        ->columnSpan(1),
-                    Forms\Components\TextInput::make('old_process_number')
-                        ->label('Número do Processo Antigo')
-                        ->maxLength(255)
-                        ->columnSpan(1),
+                                                    Notification::make()
+                                                        ->title('Dados importados com sucesso!')
+                                                        ->success()
+                                                        ->send();
+                                                } else {
+                                                    Notification::make()
+                                                        ->title('Processo não encontrado na API')
+                                                        ->danger()
+                                                        ->send();
+                                                }
+                                            })
+                                    ),
 
-                    // === DADOS JURÍDICOS ===
-                    Forms\Components\Select::make('judiciary_type')
-                        ->label('Judiciário')
-                        ->options([
-                            'trabalhista' => 'Justiça do Trabalho',
-                            'federal' => 'Justiça Federal',
-                            'estadual' => 'Justiça Estadual',
-                            'militar' => 'Justiça Militar',
-                            'eleitoral' => 'Justiça Eleitoral',
-                        ])
-                        ->searchable()
-                        ->columnSpan(1),
-                    Forms\Components\Select::make('process_nature')
-                        ->label('Natureza do Processo')
-                        ->options([
-                            'trabalhista' => 'Trabalhista',
-                            'civil' => 'Cível',
-                            'criminal' => 'Criminal',
-                            'tributario' => 'Tributário',
-                            'administrativo' => 'Administrativo',
-                            'previdenciario' => 'Previdenciário',
-                            'consumidor' => 'Consumidor',
-                            'familia' => 'Família',
-                        ])
-                        ->searchable()
-                        ->columnSpan(1),
-                    Forms\Components\Select::make('tribunal')
-                        ->label('Tribunal/Instância')
-                        ->options([
-                            // Trabalho
-                            'trt1' => 'TRT 1ª Região (RJ)',
-                            'trt2' => 'TRT 2ª Região (SP)',
-                            'trt3' => 'TRT 3ª Região (MG)',
-                            'trt4' => 'TRT 4ª Região (RS)',
-                            'trt5' => 'TRT 5ª Região (BA)',
-                            'tst' => 'TST - Tribunal Superior do Trabalho',
-                            // Federal
-                            'trf1' => 'TRF 1ª Região',
-                            'trf2' => 'TRF 2ª Região',
-                            'trf3' => 'TRF 3ª Região',
-                            'trf4' => 'TRF 4ª Região',
-                            'trf5' => 'TRF 5ª Região',
-                            // Superiores
-                            'stj' => 'STJ - Superior Tribunal de Justiça',
-                            'stf' => 'STF - Supremo Tribunal Federal',
-                            // Estaduais (exemplos principais)
-                            'tjsp' => 'TJSP - Tribunal de Justiça de SP',
-                            'tjrj' => 'TJRJ - Tribunal de Justiça do RJ',
-                            'tjmg' => 'TJMG - Tribunal de Justiça de MG',
-                            'tjrs' => 'TJRS - Tribunal de Justiça do RS',
-                        ])
-                        ->searchable()
-                        ->columnSpan(1),
-                    Forms\Components\TextInput::make('city_district')
-                        ->label('Cidade/Comarca')
-                        ->maxLength(255)
-                        ->placeholder('Ex: São Paulo, Porto Alegre, etc.')
-                        ->columnSpan(1),
-                    Forms\Components\Select::make('process_format')
-                        ->label('Formato do Processo')
-                        ->options([
-                            'eletronico' => 'Eletrônico',
-                            'fisico' => 'Físico',
-                            'hibrido' => 'Híbrido',
-                        ])
-                        ->default('eletronico')
-                        ->columnSpan(1),
-                    Forms\Components\DatePicker::make('citation_date')
-                        ->label('Data da Citação')
-                        ->displayFormat('d/m/Y')
-                        ->columnSpan(1),
+                                Forms\Components\TextInput::make('trt')
+                                    ->label('TRT')
+                                    ->maxLength(2)
+                                    ->disabled(),
 
-                    Forms\Components\Textarea::make('description')
-                        ->label('Descrição')
-                        ->rows(3)
-                        ->columnSpanFull(),
-                    Forms\Components\Select::make('status')
-                        ->label('Status')
-                        ->options([
-                            'active' => 'Ativo',
-                            'suspended' => 'Suspenso',
-                            'archived' => 'Arquivado',
-                            'completed' => 'Concluído',
-                            'aguardando_api_trt' => 'Aguardando API TRT',
-                        ])
-                        ->default('active')
-                        ->required(),
-                    Forms\Components\DatePicker::make('start_date')
-                        ->label('Data de Início')
-                        ->required(),
-                    Forms\Components\DatePicker::make('deadline')
-                        ->label('Prazo Final'),
+                                Forms\Components\TextInput::make('classe')
+                                    ->label('Classe')
+                                    ->disabled(),
 
-                    // === PARTES DO PROCESSO ===
-                    // Temporariamente comentado - adicionar partes após criar o processo
-                    // Forms\Components\Repeater::make('parties')
-                    //     ->relationship('parties')
-                    //     ->label('Partes do Processo')
-                    //     ->schema([
-                    //         Forms\Components\Select::make('party_type')
-                    //             ->label('Tipo')
-                    //             ->options([
-                    //                 'active' => 'Polo Ativo (Reclamantes)',
-                    //                 'passive' => 'Polo Passivo (Reclamados)',
-                    //                 'interested' => 'Outros Interessados (Peritos, etc.)'
-                    //             ])
-                    //             ->required()
-                    //             ->reactive()
-                    //             ->columnSpan(1),
-                    //         Forms\Components\TextInput::make('role')
-                    //             ->label('Função')
-                    //             ->placeholder('Ex: reclamante, reclamado, perito')
-                    //             ->maxLength(255)
-                    //             ->columnSpan(1),
-                    //         Forms\Components\TextInput::make('name')
-                    //             ->label('Nome/Razão Social')
-                    //             ->required()
-                    //             ->maxLength(255)
-                    //             ->columnSpan(2),
-                    //         Forms\Components\TextInput::make('document')
-                    //             ->label('CPF/CNPJ')
-                    //             ->maxLength(20)
-                    //             ->columnSpan(1),
-                    //
-                    //         // Advogados (apenas para polo ativo e passivo)
-                    //         Forms\Components\Repeater::make('lawyers')
-                    //             ->label('Advogados')
-                    //             ->schema([
-                    //                 Forms\Components\TextInput::make('name')
-                    //                     ->label('Nome do Advogado')
-                    //                     ->required()
-                    //                     ->maxLength(255)
-                    //                     ->columnSpan(2),
-                    //                 Forms\Components\TextInput::make('oab')
-                    //                     ->label('OAB')
-                    //                     ->required()
-                    //                     ->maxLength(20)
-                    //                     ->columnSpan(1),
-                    //             ])
-                    //             ->columns(3)
-                    //             ->defaultItems(0)
-                    //             ->addActionLabel('Adicionar Advogado')
-                    //             ->visible(fn (callable $get) => in_array($get('party_type'), ['active', 'passive']))
-                    //             ->columnSpan(3),
-                    //     ])
-                    //     ->columns(3)
-                    //     ->defaultItems(0)
-                    //     ->addActionLabel('Adicionar Parte')
-                    //     ->collapsible()
-                    //     ->itemLabel(fn (array $state): ?string =>
-                    //         ($state['name'] ?? '') . ' - ' . ($state['role'] ?? 'Sem função')
-                    //     )
-                    //     ->columnSpanFull(),
-                ])
-                ->columns(3),
+                                Forms\Components\TextInput::make('orgao_julgador')
+                                    ->label('Órgão Julgador')
+                                    ->disabled(),
 
-            // === SEÇÃO 3: INFORMAÇÕES DO ÓRGÃO JULGADOR ===
-            Forms\Components\Section::make('Informações do Órgão Julgador')
-                ->schema([
-                    Forms\Components\TextInput::make('court_name')
-                        ->label('Órgão Julgador')
-                        ->maxLength(255)
-                        ->placeholder('Ex: 1ª VARA DO TRABALHO DE CANOAS'),
-                    Forms\Components\Select::make('court_state')
-                        ->label('Estado')
-                        ->options([
-                            'AC' => 'Acre', 'AL' => 'Alagoas', 'AP' => 'Amapá', 'AM' => 'Amazonas',
-                            'BA' => 'Bahia', 'CE' => 'Ceará', 'DF' => 'Distrito Federal', 'ES' => 'Espírito Santo',
-                            'GO' => 'Goiás', 'MA' => 'Maranhão', 'MT' => 'Mato Grosso', 'MS' => 'Mato Grosso do Sul',
-                            'MG' => 'Minas Gerais', 'PA' => 'Pará', 'PB' => 'Paraíba', 'PR' => 'Paraná',
-                            'PE' => 'Pernambuco', 'PI' => 'Piauí', 'RJ' => 'Rio de Janeiro', 'RN' => 'Rio Grande do Norte',
-                            'RS' => 'Rio Grande do Sul', 'RO' => 'Rondônia', 'RR' => 'Roraima', 'SC' => 'Santa Catarina',
-                            'SP' => 'São Paulo', 'SE' => 'Sergipe', 'TO' => 'Tocantins'
-                        ])
-                        ->searchable(),
-                    Forms\Components\DateTimePicker::make('distributed_at')
-                        ->label('Data de Distribuição')
-                        ->displayFormat('d/m/Y H:i'),
-                    Forms\Components\DateTimePicker::make('filed_at')
-                        ->label('Data de Autuação')
-                        ->displayFormat('d/m/Y H:i'),
-                    Forms\Components\TextInput::make('case_value')
-                        ->label('Valor da Causa')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\Toggle::make('free_justice_granted')
-                        ->label('Processo com Justiça Gratuita Deferida')
-                        ->default(false),
-                ])
-                ->columns(3),
+                                Forms\Components\TextInput::make('valor_causa')
+                                    ->label('Valor da Causa')
+                                    ->disabled(),
 
-            // === SEÇÃO 4: CLASSIFICAÇÃO E ASSUNTOS ===
-            Forms\Components\Section::make('Classificação e Assuntos')
-                ->schema([
-                    Forms\Components\Select::make('process_class')
-                        ->label('Classe do Processo')
-                        ->options([
-                            'reclamacao_trabalhista' => 'Reclamação Trabalhista',
-                            'acao_cautelar' => 'Ação Cautelar',
-                            'acao_rescisoria' => 'Ação Rescisória',
-                            'mandado_seguranca' => 'Mandado de Segurança',
-                            'habeas_corpus' => 'Habeas Corpus',
-                            'embargos_execucao' => 'Embargos à Execução',
-                            'execucao' => 'Execução',
-                            'outros' => 'Outros'
-                        ])
-                        ->searchable(),
-                    Forms\Components\CheckboxList::make('subjects')
-                        ->label('Assuntos do Processo')
-                        ->options([
-                            'horas_extras' => 'Horas Extras',
-                            'adicional_hora_extra' => 'Adicional de Hora Extra',
-                            'aviso_previo' => 'Aviso Prévio',
-                            'base_calculo' => 'Base de Cálculo',
-                            'ctps' => 'CTPS',
-                            'honorarios_justica_trabalho' => 'Honorários na Justiça do Trabalho',
-                            'indenizacao_dano_material' => 'Indenização por Dano Material',
-                            'indenizacao_dano_moral' => 'Indenização por Dano Moral',
-                            'intervalo_interjornadas' => 'Intervalo Interjornadas',
-                            'intervalo_intrajornada' => 'Intervalo Intrajornada',
-                            'repouso_semanal' => 'Repouso Semanal Remunerado e Feriado',
-                            'salario_natura' => 'Salário in Natura',
-                            'verbas_rescissorias' => 'Verbas Rescisórias',
-                            'fgts' => 'FGTS',
-                            'pis' => 'PIS',
-                            'seguro_desemprego' => 'Seguro Desemprego',
-                            'adicional_periculosidade' => 'Adicional de Periculosidade',
-                            'adicional_insalubridade' => 'Adicional de Insalubridade',
-                            'adicional_noturno' => 'Adicional Noturno',
-                            '13_salario' => '13º Salário',
-                            'ferias' => 'Férias',
-                            'terco_ferias' => '1/3 de Férias',
-                            'multa_fgts' => 'Multa FGTS 40%',
-                            'diferenca_salarial' => 'Diferença Salarial',
-                            'equiparacao_salarial' => 'Equiparação Salarial',
-                        ])
-                        ->columns(3)
-                        ->columnSpanFull(),
-                ])
-                ->columns(2),
+                                Forms\Components\DateTimePicker::make('autuado')
+                                    ->label('Data de Autuação')
+                                    ->displayFormat('d/m/Y H:i')
+                                    ->disabled(),
 
-            // === SEÇÃO 5: DADOS DO FUNCIONÁRIO/RECLAMANTE ===
-            Forms\Components\Section::make('Dados do Funcionário/Reclamante')
-                ->schema([
-                    Forms\Components\TextInput::make('employee_function')
-                        ->label('Função do Funcionário')
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('city')
-                        ->label('Cidade')
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('state')
-                        ->label('Estado')
-                        ->maxLength(255),
-                    Forms\Components\DatePicker::make('admission_date')
-                        ->label('Data de Admissão'),
-                    Forms\Components\DatePicker::make('termination_date')
-                        ->label('Data de Demissão'),
-                ])
-                ->columns(3),
+                                Forms\Components\DateTimePicker::make('distribuido')
+                                    ->label('Data de Distribuição')
+                                    ->displayFormat('d/m/Y H:i')
+                                    ->disabled(),
+                            ]),
 
-            // === SEÇÃO 4: CONTROLE PROCESSUAL ===
-            Forms\Components\Section::make('Controle Processual')
-                ->schema([
-                    Forms\Components\Select::make('procedural_phase')
-                        ->label('Fase Processual')
-                        ->options([
-                            'inicial' => 'Inicial',
-                            'contestacao' => 'Contestação',
-                            'instrucao' => 'Instrução',
-                            'sentenca' => 'Sentença',
-                            'recurso_trt' => 'Recurso TRT',
-                            'acordao_trt' => 'Acórdão TRT',
-                            'recurso_tst' => 'Recurso TST',
-                            'acordao_tst' => 'Acórdão TST',
-                            'execucao' => 'Execução',
-                            'acordo' => 'Acordo',
-                            'arquivado' => 'Arquivado',
-                        ]),
-                    Forms\Components\TextInput::make('previous_phase')
-                        ->label('Fase Anterior')
-                        ->maxLength(255),
-                    Forms\Components\Select::make('case_type')
-                        ->label('Tipo de Caso')
-                        ->options([
-                            'trabalhista' => 'Trabalhista',
-                            'civil' => 'Civil',
-                            'criminal' => 'Criminal',
-                            'tributario' => 'Tributário',
-                            'administrativo' => 'Administrativo',
-                        ]),
-                    Forms\Components\Select::make('procedure_type')
-                        ->label('Tipo de Rito')
-                        ->options([
-                            'ordinario' => 'Ordinário',
-                            'sumario' => 'Sumário',
-                            'sumarissimo' => 'Sumaríssimo',
-                        ]),
-                    Forms\Components\TextInput::make('law_firm')
-                        ->label('Escritório de Advocacia')
-                        ->maxLength(255),
-                    Forms\Components\Select::make('defendant_type')
-                        ->label('Tipo de Reclamada')
-                        ->options([
-                            'pessoa_fisica' => 'Pessoa Física',
-                            'pessoa_juridica' => 'Pessoa Jurídica',
-                            'empresa_publica' => 'Empresa Pública',
-                            'autarquia' => 'Autarquia',
-                        ]),
-                ])
-                ->columns(3),
+                        Forms\Components\Textarea::make('assuntos')
+                            ->label('Assuntos')
+                            ->rows(3)
+                            ->disabled()
+                            ->columnSpanFull(),
+                    ]),
 
-            // === SEÇÃO 5: OBSERVAÇÕES E ACOMPANHAMENTO ===
-            Forms\Components\Section::make('Observações e Acompanhamento')
-                ->schema([
-                    Forms\Components\Textarea::make('observations')
-                        ->label('Observações')
-                        ->rows(3)
-                        ->columnSpanFull(),
-                    Forms\Components\Textarea::make('monthly_movements')
-                        ->label('Movimentações Mensais')
-                        ->rows(3)
-                        ->columnSpanFull(),
-                    Forms\Components\TextInput::make('procedural_progress')
-                        ->label('Andamento Processual')
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('decision_phase')
-                        ->label('Fase da Decisão')
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('situation')
-                        ->label('Situação')
-                        ->maxLength(255),
-                ])
-                ->columns(3),
+                Forms\Components\Section::make('Partes Envolvidas')
+                    ->schema([
+                        Forms\Components\Repeater::make('reclamantes')
+                            ->label('Reclamantes')
+                            ->schema([
+                                Forms\Components\TextInput::make('nome')
+                                    ->label('Nome')
+                                    ->required(),
+                                Forms\Components\TextInput::make('cpf_cnpj')
+                                    ->label('CPF/CNPJ'),
+                                Forms\Components\TagsInput::make('advogados')
+                                    ->label('Advogados')
+                                    ->separator(','),
+                            ])
+                            ->columns(3)
+                            ->collapsed()
+                            ->itemLabel(fn (array $state): ?string => $state['nome'] ?? null)
+                            ->disabled(),
 
-            // === SEÇÃO 6: CONTROLE FINANCEIRO ===
-            Forms\Components\Section::make('Controle Financeiro')
-                ->schema([
-                    Forms\Components\TextInput::make('interest_rate')
-                        ->label('Taxa de Juros (%)')
-                        ->numeric()
-                        ->step(0.0001)
-                        ->suffix('%'),
-                    Forms\Components\TextInput::make('interest_rate_diff')
-                        ->label('Diferença Taxa de Juros (%)')
-                        ->numeric()
-                        ->step(0.0001)
-                        ->suffix('%'),
-                    Forms\Components\TextInput::make('prescription_months')
-                        ->label('Meses de Prescrição')
-                        ->numeric(),
-                ])
-                ->columns(3),
+                        Forms\Components\Repeater::make('reclamados')
+                            ->label('Reclamados')
+                            ->schema([
+                                Forms\Components\TextInput::make('nome')
+                                    ->label('Nome')
+                                    ->required(),
+                                Forms\Components\TextInput::make('cpf_cnpj')
+                                    ->label('CPF/CNPJ'),
+                                Forms\Components\TagsInput::make('advogados')
+                                    ->label('Advogados')
+                                    ->separator(','),
+                            ])
+                            ->columns(3)
+                            ->collapsed()
+                            ->itemLabel(fn (array $state): ?string => $state['nome'] ?? null)
+                            ->disabled(),
 
-            // === SEÇÃO 7: CONTROLE DE TEMPO E ÍNDICES ===
-            Forms\Components\Section::make('Controle de Tempo e Índices')
-                ->schema([
-                    Forms\Components\TextInput::make('termination_to_filing_tr')
-                        ->label('Demissão até Ajuizamento (TR %)')
-                        ->numeric()
-                        ->step(0.0001)
-                        ->suffix('%'),
-                    Forms\Components\TextInput::make('filing_to_current_tr')
-                        ->label('Ajuizamento até Atual (TR %)')
-                        ->numeric()
-                        ->step(0.0001)
-                        ->suffix('%'),
-                    Forms\Components\TextInput::make('termination_to_filing_ipca')
-                        ->label('Demissão até Ajuizamento (IPCA %)')
-                        ->numeric()
-                        ->step(0.0001)
-                        ->suffix('%'),
-                    Forms\Components\TextInput::make('filing_to_current_ipca')
-                        ->label('Ajuizamento até Atual (IPCA %)')
-                        ->numeric()
-                        ->step(0.0001)
-                        ->suffix('%'),
-                ])
-                ->columns(2),
+                        Forms\Components\Repeater::make('outros_interessados')
+                            ->label('Outros Interessados')
+                            ->schema([
+                                Forms\Components\TextInput::make('nome')
+                                    ->label('Nome')
+                                    ->required(),
+                                Forms\Components\TextInput::make('cpf_cnpj')
+                                    ->label('CPF/CNPJ'),
+                                Forms\Components\TextInput::make('tipo')
+                                    ->label('Tipo')
+                                    ->placeholder('Ex: perito, assistente técnico'),
+                            ])
+                            ->columns(3)
+                            ->collapsed()
+                            ->itemLabel(fn (array $state): ?string => ($state['nome'] ?? '') . ($state['tipo'] ? ' (' . $state['tipo'] . ')' : ''))
+                            ->disabled(),
+                    ])
+                    ->collapsible(),
 
-            // === SEÇÃO 8: PROVISÕES POR FASE ===
-            Forms\Components\Section::make('Provisões por Fase')
-                ->schema([
-                    Forms\Components\TextInput::make('initial_provision')
-                        ->label('Provisão Inicial')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\TextInput::make('sentence_provision')
-                        ->label('Provisão Sentença')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\TextInput::make('trt_provision')
-                        ->label('Provisão TRT')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\TextInput::make('tst_provision')
-                        ->label('Provisão TST')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\TextInput::make('settlement_provision')
-                        ->label('Provisão Acordo')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\TextInput::make('current_provision')
-                        ->label('Provisão Atual')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                ])
-                ->columns(3),
+                Forms\Components\Section::make('Status da Sincronização')
+                    ->schema([
+                        Forms\Components\Toggle::make('sincronizado')
+                            ->label('Sincronizado com API')
+                            ->disabled(),
 
-            // === SEÇÃO 9: DEPÓSITOS E PAGAMENTOS ===
-            Forms\Components\Section::make('Depósitos e Pagamentos')
-                ->schema([
-                    Forms\Components\TextInput::make('appeal_deposits')
-                        ->label('Depósitos Recursais')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\TextInput::make('judicial_deposits')
-                        ->label('Depósitos Judiciais')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\TextInput::make('releases_payments')
-                        ->label('Liberações/Pagamentos')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                ])
-                ->columns(3),
+                        Forms\Components\DateTimePicker::make('ultima_atualizacao_api')
+                            ->label('Última Atualização via API')
+                            ->displayFormat('d/m/Y H:i:s')
+                            ->disabled(),
 
-            // === SEÇÃO 10: PROVISÕES ATUALIZADAS ===
-            Forms\Components\Section::make('Provisões Atualizadas')
-                ->schema([
-                    Forms\Components\TextInput::make('current_provision_tr')
-                        ->label('Provisão Atual TR')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\TextInput::make('previous_month_provision_tr')
-                        ->label('Provisão Mês Anterior TR')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                    Forms\Components\TextInput::make('current_provision_ipca')
-                        ->label('Provisão Atual IPCA')
-                        ->numeric()
-                        ->step(0.01)
-                        ->prefix('R$'),
-                ])
-                ->columns(3),
-
-            // === SEÇÃO 11: STATUS DE PERDA E PREVISÕES ===
-            Forms\Components\Section::make('Status de Perda e Previsões')
-                ->schema([
-                    Forms\Components\Select::make('loss_status_previous')
-                        ->label('Status Perda Anterior')
-                        ->options([
-                            'provavel' => 'Provável',
-                            'possivel' => 'Possível',
-                            'remota' => 'Remota',
-                        ]),
-                    Forms\Components\Select::make('loss_status_current')
-                        ->label('Status Perda Atual')
-                        ->options([
-                            'provavel' => 'Provável',
-                            'possivel' => 'Possível',
-                            'remota' => 'Remota',
-                        ]),
-                    Forms\Components\DatePicker::make('disbursement_forecast')
-                        ->label('Previsão de Desembolso'),
-                    Forms\Components\TextInput::make('probable_status_change')
-                        ->label('Provável Mudança de Status')
-                        ->maxLength(255),
-                ])
-                ->columns(2),
-
-
-            // === SEÇÃO 12: CAMPOS PERSONALIZADOS ===
-            // Temporariamente desabilitado para debug
-            // ...CustomFieldService::getCustomFieldsForModel('process'),
-        ]);
+                        Forms\Components\Textarea::make('error')
+                            ->label('Erro na Sincronização')
+                            ->rows(2)
+                            ->disabled()
+                            ->visible(fn ($state) => !empty($state)),
+                    ])
+                    ->columns(2)
+                    ->collapsed(),
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('company.name')
-                    ->label('Empresa')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('office.name')
-                    ->label('Escritório')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('number')
-                    ->label('Número')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('linked_process_number')
-                    ->label('Processo Vinculado')
+                Tables\Columns\TextColumn::make('processo')
+                    ->label('Número do Processo')
                     ->searchable()
                     ->sortable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('court_name')
-                    ->label('Vara')
-                    ->limit(30)
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
+                    ->copyable()
+                    ->copyMessage('Número copiado!')
+                    ->copyMessageDuration(1500),
+
+                Tables\Columns\TextColumn::make('trt')
+                    ->label('TRT')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'active' => 'success',
-                        'suspended' => 'warning',
-                        'archived' => 'gray',
-                        'completed' => 'info',
-                        'aguardando_api_trt' => 'info',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'active' => 'Ativo',
-                        'suspended' => 'Suspenso',
-                        'archived' => 'Arquivado',
-                        'completed' => 'Concluído',
-                        'aguardando_api_trt' => 'Aguardando API TRT',
-                        default => $state,
-                    }),
-                Tables\Columns\TextColumn::make('start_date')
-                    ->label('Data Início')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('deadline')
-                    ->label('Prazo')
-                    ->date('d/m/Y')
-                    ->sortable()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('case_value')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('classe')
+                    ->label('Classe')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('orgao_julgador')
+                    ->label('Órgão Julgador')
+                    ->searchable()
+                    ->limit(30)
+                    ->tooltip(fn ($record) => $record->orgao_julgador),
+
+                Tables\Columns\TextColumn::make('valor_causa')
                     ->label('Valor da Causa')
-                    ->money('BRL')
-                    ->sortable()
-                    ->toggleable(),
-                Tables\Columns\IconColumn::make('free_justice_granted')
-                    ->label('Justiça Gratuita')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('reclamantes')
+                    ->label('Reclamantes')
+                    ->formatStateUsing(function ($state) {
+                        if (!is_array($state) || empty($state)) {
+                            return '-';
+                        }
+                        $nomes = collect($state)->pluck('nome')->take(2)->toArray();
+                        $texto = implode(', ', $nomes);
+                        if (count($state) > 2) {
+                            $texto .= ' (+' . (count($state) - 2) . ')';
+                        }
+                        return $texto;
+                    })
+                    ->wrap(),
+
+                Tables\Columns\TextColumn::make('reclamados')
+                    ->label('Reclamados')
+                    ->formatStateUsing(function ($state) {
+                        if (!is_array($state) || empty($state)) {
+                            return '-';
+                        }
+                        $nomes = collect($state)->pluck('nome')->take(2)->toArray();
+                        $texto = implode(', ', $nomes);
+                        if (count($state) > 2) {
+                            $texto .= ' (+' . (count($state) - 2) . ')';
+                        }
+                        return $texto;
+                    })
+                    ->wrap(),
+
+                Tables\Columns\TextColumn::make('autuado')
+                    ->label('Autuação')
+                    ->date('d/m/Y')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('distribuido')
+                    ->label('Distribuição')
+                    ->date('d/m/Y')
+                    ->sortable(),
+
+                Tables\Columns\IconColumn::make('sincronizado')
+                    ->label('Sincronizado')
                     ->boolean()
-                    ->toggleable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Criado em')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('ultima_atualizacao_api')
+                    ->label('Últ. Atualização')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('company_id')
-                    ->label('Empresa')
-                    ->relationship('company', 'name'),
-                Tables\Filters\SelectFilter::make('office_id')
-                    ->label('Escritório')
-                    ->relationship('office', 'name'),
-                Tables\Filters\SelectFilter::make('status')
-                    ->label('Status')
-                    ->options([
-                        'active' => 'Ativo',
-                        'suspended' => 'Suspenso',
-                        'archived' => 'Arquivado',
-                        'completed' => 'Concluído',
-                        'aguardando_api_trt' => 'Aguardando API TRT',
-                    ]),
-                Tables\Filters\Filter::make('has_deadline')
-                    ->label('Com Prazo')
-                    ->query(fn (Builder $query): Builder => $query->whereNotNull('deadline')),
-                Tables\Filters\Filter::make('free_justice')
-                    ->label('Justiça Gratuita')
-                    ->query(fn (Builder $query): Builder => $query->where('free_justice_granted', true)),
+                Tables\Filters\SelectFilter::make('trt')
+                    ->label('TRT')
+                    ->options(function () {
+                        return Process::query()
+                            ->distinct()
+                            ->whereNotNull('trt')
+                            ->pluck('trt', 'trt')
+                            ->mapWithKeys(fn ($trt) => [$trt => "TRT-{$trt}"])
+                            ->toArray();
+                    }),
+
+                Tables\Filters\SelectFilter::make('classe')
+                    ->label('Classe')
+                    ->options(function () {
+                        return Process::query()
+                            ->distinct()
+                            ->whereNotNull('classe')
+                            ->pluck('classe', 'classe')
+                            ->toArray();
+                    }),
+
+                Tables\Filters\TernaryFilter::make('sincronizado')
+                    ->label('Sincronização')
+                    ->placeholder('Todos')
+                    ->trueLabel('Sincronizados')
+                    ->falseLabel('Não sincronizados'),
+
+                Tables\Filters\Filter::make('precisa_atualizacao')
+                    ->label('Precisa Atualização')
+                    ->query(fn ($query) => $query->precisandoAtualizacao()),
             ])
             ->actions([
-                Tables\Actions\Action::make('sync_trt')
-                    ->label('Sincronizar TRT')
+                Tables\Actions\Action::make('sincronizar')
+                    ->label('Sincronizar')
                     ->icon('heroicon-o-arrow-path')
-                    ->color('info')
-                    ->requiresConfirmation()
-                    ->modalHeading('Sincronizar com API TRT?')
-                    ->modalDescription(fn (Process $record) => "Isso irá consultar a API TRT para o processo {$record->number}. Deseja continuar?")
+                    ->color('primary')
                     ->action(function (Process $record) {
-                        // Despacha o job
-                        ProcessTrtData::dispatch($record);
+                        $trtService = new TrtApiService();
+                        $dados = $trtService->consultarProcesso($record->processo);
 
-                        Notification::make()
-                            ->title('Job despachado!')
-                            ->body("Processo {$record->number} adicionado à fila de sincronização TRT.")
-                            ->success()
-                            ->send();
-                    })
-                    ->visible(fn (Process $record) => in_array($record->status, ['aguardando_api_trt', 'active'])),
-                Tables\Actions\ViewAction::make(),
+                        if ($dados) {
+                            $record->atualizarDaApi($dados);
+                            Notification::make()
+                                ->title('Processo sincronizado com sucesso!')
+                                ->success()
+                                ->send();
+                        } else {
+                            $record->marcarErroSincronizacao('Não foi possível obter dados da API');
+                            Notification::make()
+                                ->title('Erro ao sincronizar processo')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
+                Tables\Actions\BulkAction::make('sincronizar_lote')
+                    ->label('Sincronizar Selecionados')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->deselectRecordsAfterCompletion()
+                    ->action(function ($records) {
+                        $trtService = new TrtApiService();
+                        $sucesso = 0;
+                        $erro = 0;
+
+                        foreach ($records as $record) {
+                            $dados = $trtService->consultarProcesso($record->processo);
+                            if ($dados) {
+                                $record->atualizarDaApi($dados);
+                                $sucesso++;
+                            } else {
+                                $record->marcarErroSincronizacao('Não foi possível obter dados da API');
+                                $erro++;
+                            }
+                        }
+
+                        Notification::make()
+                            ->title("Sincronização concluída")
+                            ->body("Sucesso: {$sucesso} | Erro: {$erro}")
+                            ->success()
+                            ->send();
+                    }),
+
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
@@ -727,7 +381,7 @@ class ProcessResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\PartiesRelationManager::class,
+            //
         ];
     }
 
@@ -737,11 +391,17 @@ class ProcessResource extends Resource
             'index' => Pages\ListProcesses::route('/'),
             'create' => Pages\CreateProcess::route('/create'),
             'edit' => Pages\EditProcess::route('/{record}/edit'),
+            'view' => Pages\ViewProcess::route('/{record}'),
         ];
     }
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        return static::getModel()::naoSincronizados()->count() ?: null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return static::getNavigationBadge() > 0 ? 'warning' : null;
     }
 }

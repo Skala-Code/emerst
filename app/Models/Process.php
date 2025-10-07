@@ -2,231 +2,206 @@
 
 namespace App\Models;
 
-use App\Traits\HasDocuments;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Carbon\Carbon;
 
 class Process extends Model
 {
-    use HasDocuments;
+    use HasFactory;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'company_id',
-        'office_id',
-        'lawyer_id',
-        'number',
-        'linked_process_number',
-        'old_process_number',
-        'judiciary_type',
-        'process_nature',
-        'tribunal',
-        'title',
-        'description',
-        'status',
-        'start_date',
-        'deadline',
-        'custom_data',
-        // Dados do Funcionário
-        'employee_function',
-        'city',
-        'state',
-        'admission_date',
-        'termination_date',
-        // Controle Processual
-        'folder_number',
-        'procedural_phase',
-        'observations',
-        'interest_rate',
-        'monthly_movements',
-        'previous_phase',
-        'interest_rate_diff',
-        'law_firm',
-        // Controle de Tempo
-        'termination_to_filing_tr',
-        'filing_to_current_tr',
-        'termination_to_filing_ipca',
-        'filing_to_current_ipca',
-        'prescription_months',
-        // Tipo de Caso
-        'case_type',
-        'procedure_type',
-        // Provisões por Fase
-        'initial_provision',
-        'sentence_provision',
-        'trt_provision',
-        'tst_provision',
-        'settlement_provision',
-        'current_provision',
-        // Depósitos e Pagamentos
-        'appeal_deposits',
-        'judicial_deposits',
-        'releases_payments',
-        // Provisões Atualizadas
-        'current_provision_tr',
-        'previous_month_provision_tr',
-        'current_provision_ipca',
-        // Status de Perda
-        'loss_status_previous',
-        'loss_status_current',
-        // Previsões
-        'disbursement_forecast',
-        'probable_status_change',
-        'procedural_progress',
-        // Decisões
-        'decision_phase',
-        'situation',
-        'defendant_type',
-        // Campos do Órgão Julgador
-        'court_name',
-        'court_state',
-        'city_district',
-        'distributed_at',
-        'filed_at',
-        'citation_date',
-        'case_value',
-        'free_justice_granted',
-        'subjects',
-        'process_class',
-        'process_format',
-        // Novos campos judiciais da API
+        'processo',
+        'trt',
         'classe',
         'orgao_julgador',
-        'segredo_justica',
-        'justica_gratuita',
-        'distribuido_em',
-        'autuado_em',
-        'valor_da_causa',
-        'juizo_digital',
-        // === CAMPOS DA API TRT ===
-        'trt_number',
-        'trt_api_data',
-        'trt_api_synced_at',
-        'trt_reclamantes',
-        'trt_reclamados',
-        'trt_outros_interessados',
-        'trt_api_attempts',
-        'trt_api_error',
+        'valor_causa',
+        'autuado',
+        'distribuido',
+        'assuntos',
+        'reclamantes',
+        'reclamados',
+        'outros_interessados',
+        'pdfs',
+        'error',
+        'ultima_atualizacao_api',
+        'sincronizado',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
-        'start_date' => 'date',
-        'deadline' => 'date',
-        'custom_data' => 'array',
-        'admission_date' => 'date',
-        'termination_date' => 'date',
-        'disbursement_forecast' => 'date',
-        'interest_rate' => 'decimal:4',
-        'interest_rate_diff' => 'decimal:4',
-        'termination_to_filing_tr' => 'decimal:4',
-        'filing_to_current_tr' => 'decimal:4',
-        'termination_to_filing_ipca' => 'decimal:4',
-        'filing_to_current_ipca' => 'decimal:4',
-        'initial_provision' => 'decimal:2',
-        'sentence_provision' => 'decimal:2',
-        'trt_provision' => 'decimal:2',
-        'tst_provision' => 'decimal:2',
-        'settlement_provision' => 'decimal:2',
-        'current_provision' => 'decimal:2',
-        'appeal_deposits' => 'decimal:2',
-        'judicial_deposits' => 'decimal:2',
-        'releases_payments' => 'decimal:2',
-        'current_provision_tr' => 'decimal:2',
-        'previous_month_provision_tr' => 'decimal:2',
-        'current_provision_ipca' => 'decimal:2',
-        // Novos campos
-        'distributed_at' => 'datetime',
-        'filed_at' => 'datetime',
-        'citation_date' => 'date',
-        'case_value' => 'decimal:2',
-        'free_justice_granted' => 'boolean',
-        'subjects' => 'array',
-        // Campos da API judicial
-        'segredo_justica' => 'boolean',
-        'justica_gratuita' => 'boolean',
-        'distribuido_em' => 'datetime',
-        'autuado_em' => 'datetime',
-        'valor_da_causa' => 'decimal:2',
-        'juizo_digital' => 'boolean',
-        // === CAMPOS DA API TRT ===
-        'trt_api_data' => 'array',
-        'trt_api_synced_at' => 'datetime',
-        'trt_reclamantes' => 'array',
-        'trt_reclamados' => 'array',
-        'trt_outros_interessados' => 'array',
+        'autuado' => 'datetime',
+        'distribuido' => 'datetime',
+        'ultima_atualizacao_api' => 'datetime',
+        'sincronizado' => 'boolean',
+        'reclamantes' => 'array',
+        'reclamados' => 'array',
+        'outros_interessados' => 'array',
+        'pdfs' => 'array',
     ];
 
-    // Accessor para exibição formatada
-    public function getDisplayNameAttribute(): string
+    /**
+     * Obtém o valor da causa formatado como número
+     */
+    public function getValorCausaNumericoAttribute(): ?float
     {
-        return $this->title
-            ? "{$this->number} - {$this->title}"
-            : $this->number;
+        if (!$this->valor_causa) {
+            return null;
+        }
+
+        // Remove "R$", espaços e pontos de milhar, converte vírgula para ponto
+        $valor = str_replace(['R$', ' ', '.'], '', $this->valor_causa);
+        $valor = str_replace(',', '.', $valor);
+
+        return (float) $valor;
     }
 
-    public function company(): BelongsTo
+    /**
+     * Obtém lista de nomes dos reclamantes
+     */
+    public function getNomesReclamantesAttribute(): array
     {
-        return $this->belongsTo(Company::class);
+        if (!$this->reclamantes || !is_array($this->reclamantes)) {
+            return [];
+        }
+
+        return collect($this->reclamantes)->pluck('nome')->toArray();
     }
 
-    public function office(): BelongsTo
+    /**
+     * Obtém lista de nomes dos reclamados
+     */
+    public function getNomesReclamadosAttribute(): array
     {
-        return $this->belongsTo(Office::class);
+        if (!$this->reclamados || !is_array($this->reclamados)) {
+            return [];
+        }
+
+        return collect($this->reclamados)->pluck('nome')->toArray();
     }
 
-    public function lawyer(): BelongsTo
+    /**
+     * Obtém todos os advogados do processo (reclamantes e reclamados)
+     */
+    public function getTodosAdvogadosAttribute(): array
     {
-        return $this->belongsTo(Lawyer::class);
+        $advogados = [];
+
+        // Advogados dos reclamantes
+        if ($this->reclamantes && is_array($this->reclamantes)) {
+            foreach ($this->reclamantes as $reclamante) {
+                if (isset($reclamante['advogados']) && is_array($reclamante['advogados'])) {
+                    $advogados = array_merge($advogados, $reclamante['advogados']);
+                }
+            }
+        }
+
+        // Advogados dos reclamados
+        if ($this->reclamados && is_array($this->reclamados)) {
+            foreach ($this->reclamados as $reclamado) {
+                if (isset($reclamado['advogados']) && is_array($reclamado['advogados'])) {
+                    $advogados = array_merge($advogados, $reclamado['advogados']);
+                }
+            }
+        }
+
+        return array_unique($advogados);
     }
 
-    public function serviceOrders(): HasMany
+    /**
+     * Verifica se precisa atualizar dados da API
+     */
+    public function precisaAtualizacao(): bool
     {
-        return $this->hasMany(ServiceOrder::class);
+        if (!$this->sincronizado) {
+            return true;
+        }
+
+        if (!$this->ultima_atualizacao_api) {
+            return true;
+        }
+
+        // Atualiza se a última atualização foi há mais de 7 dias
+        return $this->ultima_atualizacao_api->diffInDays(now()) > 7;
     }
 
-    public function parties(): HasMany
+    /**
+     * Scope para processos não sincronizados
+     */
+    public function scopeNaoSincronizados($query)
     {
-        return $this->hasMany(ProcessParty::class);
+        return $query->where('sincronizado', false);
     }
 
-    public function activeParties(): HasMany
+    /**
+     * Scope para processos que precisam atualização
+     */
+    public function scopePrecisandoAtualizacao($query)
     {
-        return $this->hasMany(ProcessParty::class)->where('polo', 'ATIVO')->whereNull('parent_id');
+        return $query->where('sincronizado', false)
+            ->orWhere('ultima_atualizacao_api', '<', now()->subDays(7))
+            ->orWhereNull('ultima_atualizacao_api');
     }
 
-    public function passiveParties(): HasMany
+    /**
+     * Scope para buscar por TRT específico
+     */
+    public function scopeDeTrt($query, string $trt)
     {
-        return $this->hasMany(ProcessParty::class)->where('polo', 'PASSIVO')->whereNull('parent_id');
+        return $query->where('trt', $trt);
     }
 
-    public function interestedParties(): HasMany
+    /**
+     * Scope para buscar por classe específica
+     */
+    public function scopeDeClasse($query, string $classe)
     {
-        return $this->hasMany(ProcessParty::class)->where('polo', 'TERCEIROS')->whereNull('parent_id');
+        return $query->where('classe', $classe);
     }
 
-    public function processSubjects(): HasMany
+    /**
+     * Atualiza dados do processo com informações da API
+     */
+    public function atualizarDaApi(array $dadosApi): void
     {
-        return $this->hasMany(ProcessSubject::class);
+        $this->fill([
+            'trt' => $dadosApi['trt'] ?? null,
+            'classe' => $dadosApi['classe'] ?? null,
+            'orgao_julgador' => $dadosApi['orgao_julgador'] ?? null,
+            'valor_causa' => $dadosApi['valor_causa'] ?? null,
+            'autuado' => isset($dadosApi['autuado']) ? Carbon::parse($dadosApi['autuado']) : null,
+            'distribuido' => isset($dadosApi['distribuido']) ? Carbon::parse($dadosApi['distribuido']) : null,
+            'assuntos' => $dadosApi['assuntos'] ?? null,
+            'reclamantes' => $dadosApi['reclamantes'] ?? [],
+            'reclamados' => $dadosApi['reclamados'] ?? [],
+            'outros_interessados' => $dadosApi['outros_interessados'] ?? [],
+            'pdfs' => $dadosApi['pdfs'] ?? [],
+            'error' => null,
+            'ultima_atualizacao_api' => now(),
+            'sincronizado' => true,
+        ]);
+
+        $this->save();
     }
 
-    public function mainSubject(): HasMany
+    /**
+     * Marca o processo como erro ao sincronizar
+     */
+    public function marcarErroSincronizacao(string $erro): void
     {
-        return $this->hasMany(ProcessSubject::class)->where('principal', true);
+        $this->update([
+            'error' => $erro,
+            'ultima_atualizacao_api' => now(),
+            'sincronizado' => false,
+        ]);
     }
-
-    public function movements(): HasMany
-    {
-        return $this->hasMany(ProcessMovement::class)->whereNull('parent_id')->orderBy('data', 'desc');
-    }
-
-    public function dispatches(): HasMany
-    {
-        return $this->hasMany(ProcessDispatch::class)->orderBy('data_criacao', 'desc');
-    }
-
-    public function pendingDispatches(): HasMany
-    {
-        return $this->hasMany(ProcessDispatch::class)->where('fechado', false);
-    }
-
 }
