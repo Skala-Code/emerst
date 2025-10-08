@@ -50,6 +50,14 @@ class Process extends Model
     ];
 
     /**
+     * Obtém o nome de exibição do processo
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->processo ?? 'Processo sem número';
+    }
+
+    /**
      * Obtém o valor da causa formatado como número
      */
     public function getValorCausaNumericoAttribute(): ?float
