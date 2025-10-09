@@ -1266,6 +1266,9 @@ class ServiceOrderResource extends Resource
                         )
                     ),
 
+                Tables\Actions\ViewAction::make()
+                    ->label('Visualizar'),
+
                 Tables\Actions\EditAction::make()
                     ->label('Editar'),
 
@@ -1333,6 +1336,7 @@ class ServiceOrderResource extends Resource
             'index' => Pages\ListServiceOrders::route('/'),
             'create' => Pages\CreateServiceOrder::route('/create'),
             'edit' => Pages\EditServiceOrder::route('/{record}/edit'),
+            'view' => Pages\ViewServiceOrder::route('/{record}'),
         ];
     }
 }

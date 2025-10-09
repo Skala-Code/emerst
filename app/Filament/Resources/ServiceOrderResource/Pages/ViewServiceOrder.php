@@ -4,13 +4,13 @@ namespace App\Filament\Resources\ServiceOrderResource\Pages;
 
 use App\Filament\Resources\ServiceOrderResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ViewRecord;
 
-class EditServiceOrder extends EditRecord
+class ViewServiceOrder extends ViewRecord
 {
     protected static string $resource = ServiceOrderResource::class;
 
-    protected static ?string $title = 'Editar Ordem de Serviço';
+    protected static ?string $title = 'Visualizar Ordem de Serviço';
 
     protected function getHeaderActions(): array
     {
@@ -26,14 +26,11 @@ class EditServiceOrder extends EditRecord
                 })
                 ->openUrlInNewTab()
                 ->tooltip('Abrir calculadora PJeCalc com os dados desta ordem'),
+            Actions\EditAction::make()
+                ->label('Editar'),
             Actions\DeleteAction::make()
                 ->label('Excluir')
                 ->successNotificationTitle('Ordem de serviço excluída com sucesso!'),
         ];
-    }
-
-    protected function getSavedNotificationTitle(): ?string
-    {
-        return 'Ordem de serviço atualizada com sucesso!';
     }
 }
