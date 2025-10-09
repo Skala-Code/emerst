@@ -54,10 +54,15 @@ class Process extends Model
      */
     public function getDisplayNameAttribute(): string
     {
-        if (empty($this->processo)) {
+        if (!empty($this->processo)) {
+            return (string) $this->processo;
+        }
+
+        if ($this->id) {
             return 'Processo #' . $this->id;
         }
-        return (string) $this->processo;
+
+        return 'Processo sem identificação';
     }
 
     /**
