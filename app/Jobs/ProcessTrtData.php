@@ -27,16 +27,16 @@ class ProcessTrtData implements ShouldQueue
     public function handle(TrtApiService $trtService): void
     {
         try {
-            Log::info("Iniciando consulta TRT para processo {$this->process->number}");
+            Log::info("Iniciando consulta TRT para processo {$this->process->processo}");
 
             // Extrai o número do TRT do número do processo
-            $trtNumber = $trtService->extractTrtNumber($this->process->number);
+            $trtNumber = $trtService->extractTrtNumber($this->process->processo);
             if (! $trtNumber) {
                 throw new \Exception('Não foi possível extrair o número do TRT do processo');
             }
 
             // Consulta a API
-            $data = $trtService->consultarProcesso($this->process->number);
+            $data = $trtService->consultarProcesso($this->process->processo);
 
             if (! $data) {
                 throw new \Exception('API retornou dados vazios ou inválidos');
@@ -44,52 +44,47 @@ class ProcessTrtData implements ShouldQueue
 
             // Atualiza o processo com os dados da API
             $this->process->update([
-                'trt_number' => $trtNumber,
-                'trt_api_data' => $data,
-                'trt_api_synced_at' => now(),
-                'trt_api_error' => null,
+                'trt' => $trtNumber,
+                'ultima_atualizacao_api' => now(),
+                'error' => null,
+                'sincronizado' => true,
 
                 // Extrai e salva os dados principais
-                'trt_reclamantes' => $data['reclamantes'] ?? null,
-                'trt_reclamados' => $data['reclamados'] ?? null,
-                'trt_outros_interessados' => $data['outrosInteressados'] ?? null,
+                'reclamantes' => $data['reclamantes'] ?? null,
+                'reclamados' => $data['reclamados'] ?? null,
+                'outros_interessados' => $data['outrosInteressados'] ?? null,
 
                 // Atualiza campos do processo com dados da API
                 'classe' => $data['classe'] ?? $this->process->classe,
                 'orgao_julgador' => $data['orgaoJulgador'] ?? $this->process->orgao_julgador,
-                'segredo_justica' => $data['segredoJustica'] ?? $this->process->segredo_justica,
-                'justica_gratuita' => $data['justicaGratuita'] ?? $this->process->justica_gratuita,
-                'valor_da_causa' => isset($data['valorCausa']) ? $trtService->formatarValorCausa($data['valorCausa']) : $this->process->valor_da_causa,
-                'juizo_digital' => $data['juizoDigital'] ?? $this->process->juizo_digital,
+                'valor_causa' => isset($data['valorCausa']) ? $trtService->formatarValorCausa($data['valorCausa']) : $this->process->valor_causa,
 
                 // Datas
-                'distribuido_em' => isset($data['distribuidoEm']) ? \Carbon\Carbon::parse($data['distribuidoEm']) : $this->process->distribuido_em,
-                'autuado_em' => isset($data['autuadoEm']) ? \Carbon\Carbon::parse($data['autuadoEm']) : $this->process->autuado_em,
+                'distribuido' => isset($data['distribuidoEm']) ? \Carbon\Carbon::parse($data['distribuidoEm']) : $this->process->distribuido,
+                'autuado' => isset($data['autuadoEm']) ? \Carbon\Carbon::parse($data['autuadoEm']) : $this->process->autuado,
 
-                // Muda o status para ativo após sincronização bem-sucedida
-                'status' => 'active',
+                // Assuntos
+                'assuntos' => $data['assuntos'] ?? $this->process->assuntos,
+
+                // PDFs se houver
+                'pdfs' => $data['pdfs'] ?? $this->process->pdfs,
             ]);
 
-            Log::info("Processo {$this->process->number} sincronizado com sucesso com a API TRT");
+            Log::info("Processo {$this->process->processo} sincronizado com sucesso com a API TRT");
         } catch (\Exception $e) {
-            Log::error("Erro ao processar dados TRT para processo {$this->process->number}", [
+            Log::error("Erro ao processar dados TRT para processo {$this->process->processo}", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            // Incrementa tentativas e salva o erro
+            // Salva o erro
             $this->process->update([
-                'trt_api_attempts' => $this->process->trt_api_attempts + 1,
-                'trt_api_error' => $e->getMessage(),
+                'error' => $e->getMessage(),
+                'ultima_atualizacao_api' => now(),
+                'sincronizado' => false,
             ]);
 
-            // Se ultrapassar 3 tentativas, muda status para error
-            if ($this->process->trt_api_attempts >= 3) {
-                $this->process->update([
-                    'status' => 'suspended',
-                ]);
-                Log::warning("Processo {$this->process->number} suspenso após 3 tentativas falhadas");
-            }
+            Log::warning("Erro ao processar {$this->process->processo}: {$e->getMessage()}");
 
             throw $e;
         }

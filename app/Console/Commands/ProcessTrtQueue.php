@@ -35,11 +35,11 @@ class ProcessTrtQueue extends Command
         $this->info("🔄 Iniciando processamento da fila TRT...");
 
         // Busca processos aguardando API TRT
-        $query = Process::where('status', 'aguardando_api_trt');
+        $query = Process::where('sincronizado', false);
 
         if (! $force) {
             // Não reprocessa processos que já foram sincronizados com sucesso
-            $query->whereNull('trt_api_synced_at');
+            $query->whereNull('ultima_atualizacao_api');
         }
 
         $processes = $query->limit($limit)->get();
@@ -65,11 +65,11 @@ class ProcessTrtQueue extends Command
                 $success++;
 
                 $this->newLine();
-                $this->line("✅ Job despachado para processo: {$process->number}");
+                $this->line("✅ Job despachado para processo: {$process->processo}");
             } catch (\Exception $e) {
                 $failed++;
                 $this->newLine();
-                $this->error("❌ Erro ao despachar job para processo {$process->number}: {$e->getMessage()}");
+                $this->error("❌ Erro ao despachar job para processo {$process->processo}: {$e->getMessage()}");
             }
 
             $bar->advance();

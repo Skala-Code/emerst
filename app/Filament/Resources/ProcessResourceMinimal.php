@@ -22,42 +22,37 @@ class ProcessResourceMinimal extends Resource
 
     protected static ?int $navigationSort = 99;
 
+    // NOTA: Este resource está usando a estrutura simplificada da tabela processes
+    // após a migração para a API do TRT - desabilitado por padrão
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Section::make('Dados Mínimos')
                     ->schema([
-                        Forms\Components\Select::make('company_id')
-                            ->label('Empresa')
-                            ->relationship('company', 'name')
-                            ->required(),
-
-                        Forms\Components\Select::make('office_id')
-                            ->label('Escritório')
-                            ->relationship('office', 'name')
-                            ->required(),
-
-                        Forms\Components\TextInput::make('number')
+                        Forms\Components\TextInput::make('processo')
                             ->label('Número do Processo')
                             ->required()
                             ->unique(ignoreRecord: true),
 
-                        Forms\Components\Select::make('status')
-                            ->label('Status')
-                            ->options([
-                                'active' => 'Ativo',
-                                'suspended' => 'Suspenso',
-                                'archived' => 'Arquivado',
-                                'completed' => 'Concluído',
-                                'aguardando_api_trt' => 'Aguardando API TRT',
-                            ])
-                            ->default('active')
-                            ->required(),
+                        Forms\Components\TextInput::make('trt')
+                            ->label('TRT')
+                            ->maxLength(2),
 
-                        Forms\Components\DatePicker::make('start_date')
-                            ->label('Data de Início')
-                            ->required(),
+                        Forms\Components\TextInput::make('classe')
+                            ->label('Classe'),
+
+                        Forms\Components\Toggle::make('sincronizado')
+                            ->label('Sincronizado com API')
+                            ->default(false),
+
+                        Forms\Components\DateTimePicker::make('autuado')
+                            ->label('Data de Autuação'),
+
+                        Forms\Components\DateTimePicker::make('distribuido')
+                            ->label('Data de Distribuição'),
                     ])
                     ->columns(2),
             ]);
@@ -67,14 +62,14 @@ class ProcessResourceMinimal extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('number')
+                Tables\Columns\TextColumn::make('processo')
                     ->label('Número')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('company.name')
-                    ->label('Empresa'),
-                Tables\Columns\TextColumn::make('status')
-                    ->label('Status')
-                    ->badge(),
+                Tables\Columns\TextColumn::make('trt')
+                    ->label('TRT'),
+                Tables\Columns\IconColumn::make('sincronizado')
+                    ->label('Sincronizado')
+                    ->boolean(),
             ])
             ->filters([
                 //

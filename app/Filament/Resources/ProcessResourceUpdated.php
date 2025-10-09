@@ -19,9 +19,13 @@ class ProcessResourceUpdated extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
-    protected static ?string $navigationLabel = 'Processos';
+    protected static ?string $navigationLabel = 'Processos (Legacy)';
 
     protected static ?string $navigationGroup = 'Processos';
+
+    // NOTA: Este resource está usando a estrutura antiga da tabela processes
+    // e pode não funcionar corretamente após a migração para a API do TRT
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function canViewAny(): bool
     {

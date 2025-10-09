@@ -38,59 +38,45 @@ class TrtQueue extends Page implements HasTable
         return $table
             ->query(
                 Process::query()
-                    ->where('status', 'aguardando_api_trt')
+                    ->where('sincronizado', false)
                     ->orWhere(function (Builder $query) {
-                        $query->whereNotNull('trt_api_error')
-                            ->where('trt_api_attempts', '<', 3);
+                        $query->whereNotNull('error');
                     })
                     ->orderBy('created_at', 'asc')
             )
             ->columns([
-                TextColumn::make('number')
+                TextColumn::make('processo')
                     ->label('Número do Processo')
                     ->searchable()
                     ->sortable()
                     ->copyable(),
 
-                TextColumn::make('trt_number')
+                TextColumn::make('trt')
                     ->label('TRT')
                     ->badge()
                     ->color('info')
                     ->default('N/A'),
 
-                TextColumn::make('company.name')
-                    ->label('Empresa')
+                TextColumn::make('classe')
+                    ->label('Classe')
                     ->searchable()
                     ->sortable()
                     ->limit(30),
 
-                TextColumn::make('status')
+                TextColumn::make('sincronizado')
                     ->label('Status')
                     ->badge()
-                    ->color(fn ($state) => match ($state) {
-                        'aguardando_api_trt' => 'info',
-                        'suspended' => 'warning',
-                        default => 'gray',
-                    }),
+                    ->color(fn ($state) => $state ? 'success' : 'warning')
+                    ->formatStateUsing(fn ($state) => $state ? 'Sincronizado' : 'Não Sincronizado'),
 
-                TextColumn::make('trt_api_attempts')
-                    ->label('Tentativas')
-                    ->badge()
-                    ->color(fn ($state) => match (true) {
-                        $state === 0 => 'gray',
-                        $state < 3 => 'warning',
-                        default => 'danger',
-                    })
-                    ->default(0),
-
-                TextColumn::make('trt_api_error')
+                TextColumn::make('error')
                     ->label('Último Erro')
                     ->limit(50)
                     ->tooltip(fn ($state) => $state)
                     ->default('-')
                     ->color('danger'),
 
-                TextColumn::make('trt_api_synced_at')
+                TextColumn::make('ultima_atualizacao_api')
                     ->label('Última Sincronização')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
@@ -112,7 +98,7 @@ class TrtQueue extends Page implements HasTable
 
                         Notification::make()
                             ->title('Job despachado!')
-                            ->body("Processo {$record->number} adicionado à fila de processamento.")
+                            ->body("Processo {$record->processo} adicionado à fila de processamento.")
                             ->success()
                             ->send();
                     }),
@@ -157,8 +143,8 @@ class TrtQueue extends Page implements HasTable
                 ->modalHeading('Processar toda a fila?')
                 ->modalDescription('Isso irá despachar jobs para todos os processos na fila. Tem certeza?')
                 ->action(function () {
-                    $processes = Process::where('status', 'aguardando_api_trt')
-                        ->whereNull('trt_api_synced_at')
+                    $processes = Process::where('sincronizado', false)
+                        ->whereNull('ultima_atualizacao_api')
                         ->get();
 
                     foreach ($processes as $process) {
