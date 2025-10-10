@@ -1234,21 +1234,12 @@ class ServiceOrderResource extends Resource
                                                         ->formatStateUsing(fn ($state) => $state ? \Carbon\Carbon::parse($state)->format('d/m/Y H:i') : '-')
                                                         ->columnSpan(1),
                                                 ]),
-                                            Forms\Components\Textarea::make('html_content')
-                                                ->label('Conteúdo HTML')
+                                            Forms\Components\TextInput::make('url_direta')
+                                                ->label('URL Direta')
                                                 ->disabled()
-                                                ->rows(10)
                                                 ->columnSpanFull()
-                                                ->visible(fn ($state) => ! empty($state)),
-                                            Forms\Components\Actions::make([
-                                                Forms\Components\Actions\Action::make('view_html')
-                                                    ->label('Visualizar HTML')
-                                                    ->icon('heroicon-o-eye')
-                                                    ->color('info')
-                                                    ->url(fn ($record) => $record->url_direta ?? '#')
-                                                    ->openUrlInNewTab()
-                                                    ->visible(fn ($record) => ! empty($record->url_direta)),
-                                            ]),
+                                                ->visible(fn ($state) => ! empty($state))
+                                                ->hint('Copie e cole esta URL no navegador para visualizar o relatório'),
                                         ])
                                         ->defaultItems(0)
                                         ->addable(false)
