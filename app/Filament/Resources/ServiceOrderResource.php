@@ -208,211 +208,7 @@ class ServiceOrderResource extends Resource
                                 ->columns(2),
                         ]),
 
-                    // === ABA 3: CÁLCULO PJE ===
-                    Forms\Components\Tabs\Tab::make('Cálculo PJE')
-                        ->schema([
-                            Forms\Components\Section::make('Horas Extras')
-                                ->schema([
-                                    Forms\Components\TextInput::make('special_interval_operators')
-                                        ->label('Operadores de Intervalo Especial')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('he_int_intrajornada_384')
-                                        ->label('HE Int. Intrajornada 384')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('he_excedent_6_daily')
-                                        ->label('HE Excedente 6h Diárias')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('he_excedent_8_daily')
-                                        ->label('HE Excedente 8h Diárias')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('he_int_entrejornadas_66')
-                                        ->label('HE Int. Entrejornadas 66')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('he_in_itinere')
-                                        ->label('HE In Itinere')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('he_int_intrajornada_71')
-                                        ->label('HE Int. Intrajornada 71')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('he_time_bank')
-                                        ->label('HE Banco de Horas')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('he_standby')
-                                        ->label('HE Sobreaviso')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('he_sundays_holidays')
-                                        ->label('HE Domingos e Feriados')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                ])
-                                ->columns(3)
-                                ->collapsible(),
-
-                            Forms\Components\Section::make('Adicionais')
-                                ->schema([
-                                    Forms\Components\TextInput::make('night_shift_bonus')
-                                        ->label('Adicional Noturno')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('unhealthiness_bonus')
-                                        ->label('Adicional Insalubridade')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('danger_bonus')
-                                        ->label('Adicional Periculosidade')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('salary_plus')
-                                        ->label('Salary Plus')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('productivity_bonus')
-                                        ->label('Prêmio Produtividade')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('sales_bonus')
-                                        ->label('Prêmio Vendas')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                ])
-                                ->columns(3)
-                                ->collapsible(),
-
-                            Forms\Components\Section::make('Diferenças Salariais')
-                                ->schema([
-                                    Forms\Components\TextInput::make('salary_diff_equalization')
-                                        ->label('Diferenças Salariais Equiparação')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('salary_diff_accumulated_function')
-                                        ->label('Diferenças Função Acumulada')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('function_gratification')
-                                        ->label('Gratificação de Função')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                ])
-                                ->columns(3)
-                                ->collapsible(),
-
-                            Forms\Components\Section::make('Verbas Rescisórias')
-                                ->schema([
-                                    Forms\Components\TextInput::make('thirteenth_salary')
-                                        ->label('13º Salário')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('prior_notice')
-                                        ->label('Aviso Prévio')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('double_vacation_one_third')
-                                        ->label('Férias Dobradas + 1/3')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('proportional_vacation_one_third')
-                                        ->label('Férias Proporcionais + 1/3')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('accrued_vacation_one_third')
-                                        ->label('Férias Vencidas + 1/3')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('moral_damages')
-                                        ->label('Danos Morais')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                ])
-                                ->columns(3)
-                                ->collapsible(),
-
-                            Forms\Components\Section::make('Totalizadores')
-                                ->schema([
-                                    Forms\Components\TextInput::make('subtotal')
-                                        ->label('Subtotal')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('fgts_contract_diff')
-                                        ->label('Diferenças FGTS Contrato')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('gross_total')
-                                        ->label('Total Bruto')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('inss_employee')
-                                        ->label('INSS Empregado')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('irrf')
-                                        ->label('IRRF')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('net_total')
-                                        ->label('Total Líquido')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('attorney_fees_percentage')
-                                        ->label('Honorários Advocatícios (%)')
-                                        ->numeric()
-                                        ->step(0.0001)
-                                        ->suffix('%'),
-                                    Forms\Components\TextInput::make('attorney_fees_amount')
-                                        ->label('Valor Honorários Advocatícios')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                    Forms\Components\TextInput::make('total_due_by_defendant')
-                                        ->label('Total Devido pela Ré')
-                                        ->numeric()
-                                        ->step(0.01)
-                                        ->prefix('R$'),
-                                ])
-                                ->columns(3)
-                                ->collapsible(),
-                        ]),
-
-                    // === ABA 4: CONTROLE DE CÁLCULO ===
+                    // === ABA 3: CONTROLE DE CÁLCULO ===
                     Forms\Components\Tabs\Tab::make('Controle de Cálculo')
                         ->schema([
                             Forms\Components\Section::make('Situação e Validação')
@@ -460,7 +256,7 @@ class ServiceOrderResource extends Resource
                                 ->columns(2),
                         ]),
 
-                    // === ABA 5: CÁLCULO ANALISADO ===
+                    // === ABA 4: CÁLCULO ANALISADO ===
                     Forms\Components\Tabs\Tab::make('Cálculo Analisado')
                         ->schema([
                             Forms\Components\Section::make('Dados do Cálculo Analisado')
@@ -763,7 +559,7 @@ class ServiceOrderResource extends Resource
                                 ->collapsible(),
                         ]),
 
-                    // === ABA 6: PRAZOS ===
+                    // === ABA 5: PRAZOS ===
                     Forms\Components\Tabs\Tab::make('Prazos')
                         ->schema([
                             Forms\Components\Section::make('Prazos Processuais')
@@ -802,7 +598,7 @@ class ServiceOrderResource extends Resource
                                 ->description('O Prazo Judicial é calculado automaticamente com base na Data de Publicação + Dias de Prazo (considerando apenas dias úteis).'),
                         ]),
 
-                    // === ABA 7: DISTRIBUIDOR - PRÉ ANÁLISE ===
+                    // === ABA 6: DISTRIBUIDOR - PRÉ ANÁLISE ===
                     Forms\Components\Tabs\Tab::make('Distribuidor - Pré Análise')
                         ->schema([
                             Forms\Components\Section::make('Pré-Análise')
@@ -1003,7 +799,7 @@ class ServiceOrderResource extends Resource
                                 ->collapsible(),
                         ]),
 
-                    // === ABA 8: TÉCNICO ===
+                    // === ABA 7: TÉCNICO ===
                     Forms\Components\Tabs\Tab::make('Técnico')
                         ->schema([
                             Forms\Components\Section::make('Informações Técnicas')
@@ -1117,7 +913,7 @@ class ServiceOrderResource extends Resource
                                 ->collapsible(),
                         ]),
 
-                    // === ABA 9: FATURAMENTO ===
+                    // === ABA 8: FATURAMENTO ===
                     Forms\Components\Tabs\Tab::make('Faturamento')
                         ->schema([
                             Forms\Components\Section::make('Dados do Contrato')
@@ -1230,7 +1026,7 @@ class ServiceOrderResource extends Resource
                                 ->columns(2),
                         ]),
 
-                    // === ABA 10: RELATÓRIO CÁLCULO ===
+                    // === ABA 9: RELATÓRIO CÁLCULO ===
                     Forms\Components\Tabs\Tab::make('Relatório Cálculo')
                         ->schema([
                             Forms\Components\Section::make('Gerar Relatório')
@@ -1391,7 +1187,7 @@ class ServiceOrderResource extends Resource
                                 ->collapsed(false),
                         ]),
 
-                    // === ABA 11: CAMPOS PERSONALIZADOS ===
+                    // === ABA 10: CAMPOS PERSONALIZADOS ===
                     Forms\Components\Tabs\Tab::make('Campos Personalizados')
                         ->schema(CustomFieldService::getCustomFieldsForModel('service_order')),
                 ])
