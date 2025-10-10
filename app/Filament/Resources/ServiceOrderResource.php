@@ -1141,33 +1141,60 @@ class ServiceOrderResource extends Resource
                                                             ->default('JSON')
                                                             ->required(),
                                                     ])
-                                                    ->action(function (array $data, $record) {
+                                                    ->action(function (array $data, ServiceOrder $record) {
                                                         try {
-                                                            $response = \Illuminate\Support\Facades\Http::timeout(60)->post(
-                                                                url('/api/service-orders/fetch-report'),
-                                                                [
-                                                                    'service_order_id' => $record->id,
-                                                                    'numero_calculo' => $data['numero_calculo'],
-                                                                    'tipo_relatorio' => $data['tipo_relatorio'],
-                                                                    'formato' => $data['formato'],
-                                                                ]
-                                                            );
+                                                            // Construir URL do PJeCalc
+                                                            $baseUrl = 'http://calculo.emerst.com.br:9257';
+                                                            $url = $baseUrl . '/pjecalc/relatorio-api.jsp';
 
-                                                            if ($response->successful() && $response->json('success')) {
-                                                                \Filament\Notifications\Notification::make()
-                                                                    ->title('Relatório gerado com sucesso!')
-                                                                    ->success()
-                                                                    ->send();
+                                                            // Fazer requisição ao endpoint externo
+                                                            $response = \Illuminate\Support\Facades\Http::timeout(60)->post($url, [
+                                                                'numeroCalculo' => $data['numero_calculo'],
+                                                                'tipoRelatorio' => $data['tipo_relatorio'],
+                                                                'formato' => $data['formato'],
+                                                            ]);
 
-                                                                // Recarregar a página para mostrar o novo relatório
-                                                                redirect()->to(request()->url());
-                                                            } else {
+                                                            if (! $response->successful()) {
                                                                 \Filament\Notifications\Notification::make()
                                                                     ->title('Erro ao gerar relatório')
-                                                                    ->body($response->json('message') ?? 'Erro desconhecido')
+                                                                    ->body('O servidor do PJeCalc retornou um erro: ' . $response->status())
                                                                     ->danger()
                                                                     ->send();
+                                                                return;
                                                             }
+
+                                                            $responseData = $response->json();
+
+                                                            // Validar se a resposta tem os dados esperados
+                                                            if (! isset($responseData['status'])) {
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('Resposta inválida do PJeCalc')
+                                                                    ->body('Formato de resposta não reconhecido')
+                                                                    ->danger()
+                                                                    ->send();
+                                                                return;
+                                                            }
+
+                                                            // Criar registro do relatório
+                                                            $report = \App\Models\ServiceOrderReport::create([
+                                                                'service_order_id' => $record->id,
+                                                                'numero_calculo' => $responseData['numeroCalculo'] ?? $data['numero_calculo'],
+                                                                'tipo_relatorio' => $responseData['tipoRelatorio'] ?? $data['tipo_relatorio'],
+                                                                'formato' => $responseData['formato'] ?? $data['formato'],
+                                                                'status' => $responseData['status'] ?? 'GERADO',
+                                                                'data_geracao' => isset($responseData['dataGeracao'])
+                                                                    ? \Carbon\Carbon::createFromFormat('d/m/Y H:i:s', $responseData['dataGeracao'])
+                                                                    : now(),
+                                                                'html_content' => $responseData['html'] ?? null,
+                                                                'dados_estruturados' => $responseData,
+                                                                'tamanho_bytes' => $responseData['tamanho'] ?? null,
+                                                                'url_direta' => $responseData['urlDireta'] ?? null,
+                                                            ]);
+
+                                                            \Filament\Notifications\Notification::make()
+                                                                ->title('Relatório gerado com sucesso!')
+                                                                ->success()
+                                                                ->send();
                                                         } catch (\Exception $e) {
                                                             \Filament\Notifications\Notification::make()
                                                                 ->title('Erro ao gerar relatório')
