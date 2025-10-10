@@ -218,6 +218,19 @@ class ServiceOrder extends Model
         'calculation_notes',
         'calculation_date',
         'calculated_by',
+        // === LIQUIDAÇÃO ===
+        'liquidation_numero_calculo',
+        'liquidation_data',
+        'liquidation_status',
+        'liquidation_mensagem',
+        'liquidation_valor_total',
+        'liquidation_valor_principal',
+        'liquidation_valor_juros',
+        'liquidation_valor_correcao',
+        'liquidation_itens',
+        'liquidation_alertas',
+        'liquidation_erros',
+        'liquidation_updated_at',
     ];
 
     protected $casts = [
@@ -362,6 +375,16 @@ class ServiceOrder extends Model
         'irrf_rate' => 'decimal:4',
         'irrf_deduction' => 'decimal:2',
         'spreadsheet_value' => 'decimal:2',
+        // === LIQUIDAÇÃO ===
+        'liquidation_data' => 'date',
+        'liquidation_valor_total' => 'decimal:2',
+        'liquidation_valor_principal' => 'decimal:2',
+        'liquidation_valor_juros' => 'decimal:2',
+        'liquidation_valor_correcao' => 'decimal:2',
+        'liquidation_itens' => 'array',
+        'liquidation_alertas' => 'array',
+        'liquidation_erros' => 'array',
+        'liquidation_updated_at' => 'datetime',
     ];
 
     public function process(): BelongsTo
