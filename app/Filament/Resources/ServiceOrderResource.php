@@ -491,7 +491,7 @@ class ServiceOrderResource extends Resource
                                                             ->displayFormat('d/m/Y')
                                                             ->default(now()),
                                                     ])
-                                                    ->action(function (array $data, ServiceOrder $record) {
+                                                    ->action(function (array $data, ServiceOrder $record, $livewire, $set) {
                                                         try {
                                                             \Illuminate\Support\Facades\Log::info('Iniciando busca de liquidação', [
                                                                 'service_order_id' => $record->id,
@@ -565,15 +565,26 @@ class ServiceOrderResource extends Resource
                                                             $record->liquidation_updated_at = now();
                                                             $record->save();
 
+                                                            // Atualizar os campos do formulário usando $set
+                                                            $set('liquidation_numero_calculo', $record->liquidation_numero_calculo);
+                                                            $set('liquidation_data', $record->liquidation_data);
+                                                            $set('liquidation_status', $record->liquidation_status);
+                                                            $set('liquidation_mensagem', $record->liquidation_mensagem);
+                                                            $set('liquidation_valor_total', $record->liquidation_valor_total);
+                                                            $set('liquidation_valor_principal', $record->liquidation_valor_principal);
+                                                            $set('liquidation_valor_juros', $record->liquidation_valor_juros);
+                                                            $set('liquidation_valor_correcao', $record->liquidation_valor_correcao);
+                                                            $set('liquidation_updated_at', $record->liquidation_updated_at);
+
                                                             \Illuminate\Support\Facades\Log::info('Liquidação salva com sucesso', [
                                                                 'service_order_id' => $record->id,
                                                             ]);
 
                                                             \Filament\Notifications\Notification::make()
                                                                 ->title('Liquidação atualizada!')
-                                                                ->body('Dados salvos com sucesso. Recarregue a página (F5) para visualizar.')
+                                                                ->body('Os dados foram carregados e estão visíveis abaixo.')
                                                                 ->success()
-                                                                ->duration(5000)
+                                                                ->duration(3000)
                                                                 ->send();
                                                         } catch (\Exception $e) {
                                                             \Illuminate\Support\Facades\Log::error('Erro ao buscar liquidação', [
@@ -624,6 +635,95 @@ class ServiceOrderResource extends Resource
                                         ->columnSpanFull(),
                                 ])
                                 ->columns(2),
+
+                            Forms\Components\Section::make('Dados da Liquidação PJeCalc')
+                                ->schema([
+                                    Forms\Components\TextInput::make('liquidation_numero_calculo')
+                                        ->label('Número do Cálculo')
+                                        ->disabled()
+                                        ->dehydrated(),
+
+                                    Forms\Components\DatePicker::make('liquidation_data')
+                                        ->label('Data da Liquidação')
+                                        ->disabled()
+                                        ->dehydrated(),
+
+                                    Forms\Components\TextInput::make('liquidation_status')
+                                        ->label('Status')
+                                        ->disabled()
+                                        ->dehydrated(),
+
+                                    Forms\Components\Textarea::make('liquidation_mensagem')
+                                        ->label('Mensagem')
+                                        ->disabled()
+                                        ->dehydrated()
+                                        ->rows(2)
+                                        ->columnSpanFull(),
+
+                                    Forms\Components\Grid::make(4)
+                                        ->schema([
+                                            Forms\Components\TextInput::make('liquidation_valor_total')
+                                                ->label('Valor Total')
+                                                ->disabled()
+                                                ->dehydrated()
+                                                ->prefix('R$')
+                                                ->numeric(),
+
+                                            Forms\Components\TextInput::make('liquidation_valor_principal')
+                                                ->label('Valor Principal')
+                                                ->disabled()
+                                                ->dehydrated()
+                                                ->prefix('R$')
+                                                ->numeric(),
+
+                                            Forms\Components\TextInput::make('liquidation_valor_juros')
+                                                ->label('Juros')
+                                                ->disabled()
+                                                ->dehydrated()
+                                                ->prefix('R$')
+                                                ->numeric(),
+
+                                            Forms\Components\TextInput::make('liquidation_valor_correcao')
+                                                ->label('Correção')
+                                                ->disabled()
+                                                ->dehydrated()
+                                                ->prefix('R$')
+                                                ->numeric(),
+                                        ]),
+
+                                    Forms\Components\Placeholder::make('liquidation_itens_display')
+                                        ->label('Itens da Liquidação')
+                                        ->content(function ($record) {
+                                            if (! $record || empty($record->liquidation_itens)) {
+                                                return 'Nenhum item de liquidação disponível';
+                                            }
+
+                                            $html = '<div class="space-y-2">';
+                                            foreach ($record->liquidation_itens as $item) {
+                                                $html .= '<div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-md">';
+                                                $html .= '<div class="font-semibold text-sm">' . ($item['descricao'] ?? 'N/A') . '</div>';
+                                                $html .= '<div class="grid grid-cols-4 gap-2 mt-2 text-xs">';
+                                                $html .= '<div><span class="text-gray-500">Valor:</span> R$ ' . number_format($item['valor'] ?? 0, 2, ',', '.') . '</div>';
+                                                $html .= '<div><span class="text-gray-500">Juros:</span> R$ ' . number_format($item['juros'] ?? 0, 2, ',', '.') . '</div>';
+                                                $html .= '<div><span class="text-gray-500">Correção:</span> R$ ' . number_format($item['correcao'] ?? 0, 2, ',', '.') . '</div>';
+                                                $html .= '<div><span class="text-gray-500">Total:</span> R$ ' . number_format($item['total'] ?? 0, 2, ',', '.') . '</div>';
+                                                $html .= '</div>';
+                                                $html .= '</div>';
+                                            }
+                                            $html .= '</div>';
+
+                                            return new \Illuminate\Support\HtmlString($html);
+                                        })
+                                        ->columnSpanFull(),
+
+                                    Forms\Components\DateTimePicker::make('liquidation_updated_at')
+                                        ->label('Última Atualização')
+                                        ->disabled()
+                                        ->dehydrated(),
+                                ])
+                                ->columns(2)
+                                ->collapsible()
+                                ->collapsed(fn ($record) => empty($record->liquidation_numero_calculo)),
 
                             Forms\Components\Section::make('Pagamentos Efetuados')
                                 ->schema([
