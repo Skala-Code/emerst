@@ -491,32 +491,61 @@ class ServiceOrderResource extends Resource
                                                             ->displayFormat('d/m/Y')
                                                             ->default(now()),
                                                     ])
-                                                    ->action(function (array $data, $record, $livewire) {
+                                                    ->action(function (array $data, ServiceOrder $record) {
                                                         try {
-                                                            $response = \Illuminate\Support\Facades\Http::timeout(30)->post(
-                                                                url('/api/service-orders/fetch-liquidation'),
-                                                                [
-                                                                    'service_order_id' => $record->id,
-                                                                    'numero_calculo' => $data['numero_calculo'],
-                                                                    'data_liquidacao' => \Carbon\Carbon::parse($data['data_liquidacao'])->format('d/m/Y'),
-                                                                ]
-                                                            );
+                                                            // Construir URL do PJeCalc
+                                                            $baseUrl = 'http://calculo.emerst.com.br:9257';
+                                                            $url = $baseUrl . '/pjecalc/liquidacao.jsp';
 
-                                                            if ($response->successful() && $response->json('success')) {
-                                                                \Filament\Notifications\Notification::make()
-                                                                    ->title('Liquidação atualizada com sucesso!')
-                                                                    ->success()
-                                                                    ->send();
+                                                            // Fazer requisição ao endpoint externo
+                                                            $response = \Illuminate\Support\Facades\Http::timeout(30)->get($url, [
+                                                                'numeroCalculo' => $data['numero_calculo'],
+                                                                'dataLiquidacao' => \Carbon\Carbon::parse($data['data_liquidacao'])->format('d/m/Y'),
+                                                            ]);
 
-                                                                // Recarregar a página para mostrar os novos dados
-                                                                redirect()->to(request()->url());
-                                                            } else {
+                                                            if (! $response->successful()) {
                                                                 \Filament\Notifications\Notification::make()
                                                                     ->title('Erro ao buscar liquidação')
-                                                                    ->body($response->json('message') ?? 'Erro desconhecido')
+                                                                    ->body('O servidor do PJeCalc retornou um erro: ' . $response->status())
                                                                     ->danger()
                                                                     ->send();
+                                                                return;
                                                             }
+
+                                                            $responseData = $response->json();
+
+                                                            // Validar se a resposta tem os dados esperados
+                                                            if (! isset($responseData['status'])) {
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('Resposta inválida do PJeCalc')
+                                                                    ->body('Formato de resposta não reconhecido')
+                                                                    ->danger()
+                                                                    ->send();
+                                                                return;
+                                                            }
+
+                                                            // Salvar dados na ordem de serviço
+                                                            $record->update([
+                                                                'liquidation_numero_calculo' => $responseData['numeroCalculo'] ?? null,
+                                                                'liquidation_data' => isset($responseData['dataLiquidacao'])
+                                                                    ? \Carbon\Carbon::createFromFormat('d/m/Y', $responseData['dataLiquidacao'])->format('Y-m-d')
+                                                                    : null,
+                                                                'liquidation_status' => $responseData['status'] ?? null,
+                                                                'liquidation_mensagem' => $responseData['mensagem'] ?? null,
+                                                                'liquidation_valor_total' => $responseData['valorTotal'] ?? null,
+                                                                'liquidation_valor_principal' => $responseData['valorPrincipal'] ?? null,
+                                                                'liquidation_valor_juros' => $responseData['valorJuros'] ?? null,
+                                                                'liquidation_valor_correcao' => $responseData['valorCorrecao'] ?? null,
+                                                                'liquidation_itens' => $responseData['itens'] ?? [],
+                                                                'liquidation_alertas' => $responseData['alertas'] ?? [],
+                                                                'liquidation_erros' => $responseData['erros'] ?? [],
+                                                                'liquidation_updated_at' => now(),
+                                                            ]);
+
+                                                            \Filament\Notifications\Notification::make()
+                                                                ->title('Liquidação atualizada com sucesso!')
+                                                                ->success()
+                                                                ->send();
                                                         } catch (\Exception $e) {
                                                             \Filament\Notifications\Notification::make()
                                                                 ->title('Erro ao buscar liquidação')

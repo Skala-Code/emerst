@@ -48,8 +48,14 @@ class ConsolidatedReportResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('process.office.name')
-                    ->label('Empresa/Escritório')
+                Tables\Columns\TextColumn::make('process.trt')
+                    ->label('TRT')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('process.classe')
+                    ->label('Classe')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
@@ -106,11 +112,23 @@ class ConsolidatedReportResource extends Resource
                     ->toggleable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('office')
-                    ->label('Empresa/Escritório')
-                    ->relationship('process.office', 'name')
+                Tables\Filters\SelectFilter::make('trt')
+                    ->label('TRT')
+                    ->options(function () {
+                        return \App\Models\Process::select('trt')
+                            ->distinct()
+                            ->whereNotNull('trt')
+                            ->orderBy('trt')
+                            ->pluck('trt', 'trt');
+                    })
+                    ->query(function (Builder $query, $state) {
+                        if ($state['value']) {
+                            $query->whereHas('process', function ($q) use ($state) {
+                                $q->where('trt', $state['value']);
+                            });
+                        }
+                    })
                     ->searchable()
-                    ->preload()
                     ->multiple(),
 
                 Tables\Filters\Filter::make('created_at')

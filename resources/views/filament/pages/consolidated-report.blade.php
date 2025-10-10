@@ -1,4 +1,6 @@
 <x-filament-panels::page>
+    @vite(['resources/css/consolidated-report.css'])
+
     <div class="space-y-6">
         @foreach($reportData as $index => $data)
             <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
@@ -32,29 +34,35 @@
                             Dados do Processo
                         </h4>
                         <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                            <dl class="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+                            <dl class="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
                                 <div>
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Número do Processo</dt>
                                     <dd class="mt-1 text-sm text-gray-900 dark:text-white font-semibold">{{ $data['process']['number'] }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Cliente</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['client_name'] }}</dd>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">TRT</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['trt'] }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Escritório</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['office_name'] }}</dd>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Classe</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['classe'] }}</dd>
                                 </div>
                                 <div>
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tribunal</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['court'] }}</dd>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Órgão Julgador</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['orgao_julgador'] }}</dd>
                                 </div>
-                                @if($data['process']['judge'])
-                                <div class="sm:col-span-2">
-                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Juiz</dt>
-                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['judge'] }}</dd>
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Valor da Causa</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['valor_causa'] }}</dd>
                                 </div>
-                                @endif
+                                <div>
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Reclamante</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['reclamante'] }}</dd>
+                                </div>
+                                <div class="lg:col-span-3">
+                                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Reclamado</dt>
+                                    <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ $data['process']['reclamado'] }}</dd>
+                                </div>
                             </dl>
                         </div>
                     </div>
