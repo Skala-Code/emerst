@@ -1,12 +1,17 @@
 {
   "resources/css/admin.css": {
-    "file": "assets/admin-DXeLREcW.css",
+    "file": "assets/admin-vLnaJNWC.css",
     "src": "resources/css/admin.css",
     "isEntry": true
   },
   "resources/css/app.css": {
-    "file": "assets/app-DNGvCCn9.css",
+    "file": "assets/app-CaIK0Muk.css",
     "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/consolidated-report.css": {
+    "file": "assets/consolidated-report-D2WwUqX6.css",
+    "src": "resources/css/consolidated-report.css",
     "isEntry": true
   },
   "resources/js/app.js": {
