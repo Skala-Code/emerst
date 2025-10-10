@@ -465,9 +465,69 @@ class ServiceOrderResource extends Resource
                         ->schema([
                             Forms\Components\Section::make('Dados do Cálculo Analisado')
                                 ->schema([
-                                    Forms\Components\TextInput::make('analyzed_calculation_id_fls')
-                                        ->label('ID./Fls.')
-                                        ->maxLength(255),
+                                    Forms\Components\Grid::make(3)
+                                        ->schema([
+                                            Forms\Components\TextInput::make('analyzed_calculation_id_fls')
+                                                ->label('ID./Fls.')
+                                                ->maxLength(255)
+                                                ->columnSpan(2),
+                                            Forms\Components\Actions::make([
+                                                Forms\Components\Actions\Action::make('fetch_liquidation')
+                                                    ->label('Buscar PJeCalc')
+                                                    ->icon('heroicon-o-arrow-path')
+                                                    ->color('success')
+                                                    ->requiresConfirmation()
+                                                    ->modalHeading('Buscar Liquidação do PJeCalc')
+                                                    ->modalDescription('Informe o número do cálculo e a data de liquidação')
+                                                    ->modalSubmitActionLabel('Buscar')
+                                                    ->form([
+                                                        Forms\Components\TextInput::make('numero_calculo')
+                                                            ->label('Número do Cálculo')
+                                                            ->required()
+                                                            ->placeholder('Ex: 15267'),
+                                                        Forms\Components\DatePicker::make('data_liquidacao')
+                                                            ->label('Data de Liquidação')
+                                                            ->required()
+                                                            ->displayFormat('d/m/Y')
+                                                            ->default(now()),
+                                                    ])
+                                                    ->action(function (array $data, $record, $livewire) {
+                                                        try {
+                                                            $response = \Illuminate\Support\Facades\Http::timeout(30)->post(
+                                                                url('/api/service-orders/fetch-liquidation'),
+                                                                [
+                                                                    'service_order_id' => $record->id,
+                                                                    'numero_calculo' => $data['numero_calculo'],
+                                                                    'data_liquidacao' => \Carbon\Carbon::parse($data['data_liquidacao'])->format('d/m/Y'),
+                                                                ]
+                                                            );
+
+                                                            if ($response->successful() && $response->json('success')) {
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('Liquidação atualizada com sucesso!')
+                                                                    ->success()
+                                                                    ->send();
+
+                                                                // Recarregar a página para mostrar os novos dados
+                                                                redirect()->to(request()->url());
+                                                            } else {
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('Erro ao buscar liquidação')
+                                                                    ->body($response->json('message') ?? 'Erro desconhecido')
+                                                                    ->danger()
+                                                                    ->send();
+                                                            }
+                                                        } catch (\Exception $e) {
+                                                            \Filament\Notifications\Notification::make()
+                                                                ->title('Erro ao buscar liquidação')
+                                                                ->body($e->getMessage())
+                                                                ->danger()
+                                                                ->send();
+                                                        }
+                                                    }),
+                                            ])
+                                                ->columnSpan(1),
+                                        ]),
                                     Forms\Components\Select::make('analyzed_index_type')
                                         ->label('Índice Aplicado')
                                         ->options([
