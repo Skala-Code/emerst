@@ -48,7 +48,7 @@
 }
 
 .report-section-title {
-    @apply text-md font-semibold text-gray-900 dark:text-white mb-3 flex items-center;
+    @apply text-base font-semibold text-gray-900 dark:text-white mb-3 flex items-center;
 }
 
 .report-section-icon {
