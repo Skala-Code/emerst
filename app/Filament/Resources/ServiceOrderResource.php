@@ -544,7 +544,9 @@ class ServiceOrderResource extends Resource
 
                                                             \Filament\Notifications\Notification::make()
                                                                 ->title('Liquidação atualizada com sucesso!')
+                                                                ->body('Os dados foram salvos. Recarregue a página para visualizá-los.')
                                                                 ->success()
+                                                                ->duration(5000)
                                                                 ->send();
                                                         } catch (\Exception $e) {
                                                             \Filament\Notifications\Notification::make()
@@ -1193,7 +1195,9 @@ class ServiceOrderResource extends Resource
 
                                                             \Filament\Notifications\Notification::make()
                                                                 ->title('Relatório gerado com sucesso!')
+                                                                ->body('O relatório foi salvo. Recarregue a página para visualizá-lo.')
                                                                 ->success()
+                                                                ->duration(5000)
                                                                 ->send();
                                                         } catch (\Exception $e) {
                                                             \Filament\Notifications\Notification::make()
