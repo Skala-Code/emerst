@@ -1067,7 +1067,148 @@ class ServiceOrderResource extends Resource
                                 ->columns(2),
                         ]),
 
-                    // === ABA 9: CAMPOS PERSONALIZADOS ===
+                    // === ABA 10: RELATÓRIO CÁLCULO ===
+                    Forms\Components\Tabs\Tab::make('Relatório Cálculo')
+                        ->schema([
+                            Forms\Components\Section::make('Gerar Relatório')
+                                ->schema([
+                                    Forms\Components\Grid::make(2)
+                                        ->schema([
+                                            Forms\Components\Placeholder::make('info')
+                                                ->label('Informações')
+                                                ->content('Clique no botão ao lado para gerar um novo relatório do PJeCalc.')
+                                                ->columnSpan(1),
+                                            Forms\Components\Actions::make([
+                                                Forms\Components\Actions\Action::make('fetch_report')
+                                                    ->label('Gerar Relatório PJeCalc')
+                                                    ->icon('heroicon-o-document-text')
+                                                    ->color('primary')
+                                                    ->requiresConfirmation()
+                                                    ->modalHeading('Gerar Relatório do PJeCalc')
+                                                    ->modalDescription('Informe os dados para gerar o relatório')
+                                                    ->modalSubmitActionLabel('Gerar')
+                                                    ->form([
+                                                        Forms\Components\TextInput::make('numero_calculo')
+                                                            ->label('Número do Cálculo')
+                                                            ->required()
+                                                            ->placeholder('Ex: 15267'),
+                                                        Forms\Components\Select::make('tipo_relatorio')
+                                                            ->label('Tipo de Relatório')
+                                                            ->options([
+                                                                'COMPLETO' => 'Completo',
+                                                                'RESUMO' => 'Resumo',
+                                                                'DEMONSTRATIVO' => 'Demonstrativo',
+                                                                'CONTRIBUICAO' => 'Contribuição',
+                                                                'JUSTIFICATIVA' => 'Justificativa',
+                                                            ])
+                                                            ->default('COMPLETO')
+                                                            ->required(),
+                                                        Forms\Components\Select::make('formato')
+                                                            ->label('Formato')
+                                                            ->options([
+                                                                'JSON' => 'JSON',
+                                                                'HTML' => 'HTML',
+                                                            ])
+                                                            ->default('JSON')
+                                                            ->required(),
+                                                    ])
+                                                    ->action(function (array $data, $record) {
+                                                        try {
+                                                            $response = \Illuminate\Support\Facades\Http::timeout(60)->post(
+                                                                url('/api/service-orders/fetch-report'),
+                                                                [
+                                                                    'service_order_id' => $record->id,
+                                                                    'numero_calculo' => $data['numero_calculo'],
+                                                                    'tipo_relatorio' => $data['tipo_relatorio'],
+                                                                    'formato' => $data['formato'],
+                                                                ]
+                                                            );
+
+                                                            if ($response->successful() && $response->json('success')) {
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('Relatório gerado com sucesso!')
+                                                                    ->success()
+                                                                    ->send();
+
+                                                                // Recarregar a página para mostrar o novo relatório
+                                                                redirect()->to(request()->url());
+                                                            } else {
+                                                                \Filament\Notifications\Notification::make()
+                                                                    ->title('Erro ao gerar relatório')
+                                                                    ->body($response->json('message') ?? 'Erro desconhecido')
+                                                                    ->danger()
+                                                                    ->send();
+                                                            }
+                                                        } catch (\Exception $e) {
+                                                            \Filament\Notifications\Notification::make()
+                                                                ->title('Erro ao gerar relatório')
+                                                                ->body($e->getMessage())
+                                                                ->danger()
+                                                                ->send();
+                                                        }
+                                                    }),
+                                            ])
+                                                ->columnSpan(1),
+                                        ]),
+                                ]),
+
+                            Forms\Components\Section::make('Relatórios Gerados')
+                                ->schema([
+                                    Forms\Components\Repeater::make('reports')
+                                        ->label('')
+                                        ->relationship('reports')
+                                        ->schema([
+                                            Forms\Components\Grid::make(4)
+                                                ->schema([
+                                                    Forms\Components\TextInput::make('numero_calculo')
+                                                        ->label('Nº Cálculo')
+                                                        ->disabled()
+                                                        ->columnSpan(1),
+                                                    Forms\Components\TextInput::make('tipo_relatorio')
+                                                        ->label('Tipo')
+                                                        ->disabled()
+                                                        ->columnSpan(1),
+                                                    Forms\Components\TextInput::make('status')
+                                                        ->label('Status')
+                                                        ->disabled()
+                                                        ->columnSpan(1),
+                                                    Forms\Components\TextInput::make('data_geracao')
+                                                        ->label('Data Geração')
+                                                        ->disabled()
+                                                        ->formatStateUsing(fn ($state) => $state ? \Carbon\Carbon::parse($state)->format('d/m/Y H:i') : '-')
+                                                        ->columnSpan(1),
+                                                ]),
+                                            Forms\Components\Textarea::make('html_content')
+                                                ->label('Conteúdo HTML')
+                                                ->disabled()
+                                                ->rows(10)
+                                                ->columnSpanFull()
+                                                ->visible(fn ($state) => ! empty($state)),
+                                            Forms\Components\Actions::make([
+                                                Forms\Components\Actions\Action::make('view_html')
+                                                    ->label('Visualizar HTML')
+                                                    ->icon('heroicon-o-eye')
+                                                    ->color('info')
+                                                    ->url(fn ($record) => $record->url_direta ?? '#')
+                                                    ->openUrlInNewTab()
+                                                    ->visible(fn ($record) => ! empty($record->url_direta)),
+                                            ]),
+                                        ])
+                                        ->defaultItems(0)
+                                        ->addable(false)
+                                        ->deletable(true)
+                                        ->reorderable(false)
+                                        ->collapsible()
+                                        ->itemLabel(fn (array $state): ?string =>
+                                            isset($state['numero_calculo']) && isset($state['tipo_relatorio'])
+                                                ? "Relatório {$state['numero_calculo']} - {$state['tipo_relatorio']}"
+                                                : null
+                                        ),
+                                ])
+                                ->collapsed(false),
+                        ]),
+
+                    // === ABA 11: CAMPOS PERSONALIZADOS ===
                     Forms\Components\Tabs\Tab::make('Campos Personalizados')
                         ->schema(CustomFieldService::getCustomFieldsForModel('service_order')),
                 ])

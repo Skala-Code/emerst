@@ -19,3 +19,6 @@ Route::post('/service-orders/save-calculation', [ServiceOrderCalculationControll
 
 // Rota sem autenticação para buscar liquidação do PJeCalc
 Route::post('/service-orders/fetch-liquidation', [ServiceOrderCalculationController::class, 'fetchLiquidation']);
+
+// Rota sem autenticação para buscar relatório do PJeCalc
+Route::post('/service-orders/fetch-report', [ServiceOrderCalculationController::class, 'fetchReport']);

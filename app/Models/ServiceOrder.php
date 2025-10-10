@@ -407,6 +407,11 @@ class ServiceOrder extends Model
         return $this->belongsTo(\App\Models\User::class, 'calculated_by');
     }
 
+    public function reports(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ServiceOrderReport::class);
+    }
+
     // Métodos úteis para workflow
     public function assignTo(Lawyer $lawyer, ?string $stage = null, ?string $notes = null): void
     {

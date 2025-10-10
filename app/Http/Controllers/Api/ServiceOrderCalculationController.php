@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\ServiceOrder;
+use App\Models\ServiceOrderReport;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
@@ -127,6 +128,96 @@ class ServiceOrderCalculationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erro ao processar liquidação',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Busca relatório do PJeCalc e salva na ordem de serviço
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function fetchReport(Request $request): JsonResponse
+    {
+        // Validar requisição
+        $validated = $request->validate([
+            'service_order_id' => 'required|integer|exists:service_orders,id',
+            'numero_calculo' => 'required|string',
+            'tipo_relatorio' => 'nullable|string|in:COMPLETO,RESUMO,DEMONSTRATIVO,CONTRIBUICAO,JUSTIFICATIVA',
+            'formato' => 'nullable|string|in:HTML,JSON',
+        ]);
+
+        try {
+            // Buscar ordem de serviço
+            $serviceOrder = ServiceOrder::findOrFail($validated['service_order_id']);
+
+            // Parâmetros padrão
+            $tipoRelatorio = $validated['tipo_relatorio'] ?? 'COMPLETO';
+            $formato = $validated['formato'] ?? 'JSON';
+
+            // Construir URL do PJeCalc
+            $baseUrl = 'http://calculo.emerst.com.br:9257';
+            $url = $baseUrl . '/pjecalc/relatorio-api.jsp';
+
+            // Fazer requisição ao endpoint externo
+            $response = Http::timeout(60)->post($url, [
+                'numeroCalculo' => $validated['numero_calculo'],
+                'tipoRelatorio' => $tipoRelatorio,
+                'formato' => $formato,
+            ]);
+
+            if (! $response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao buscar relatório do PJeCalc',
+                    'error' => 'O servidor do PJeCalc retornou um erro: ' . $response->status(),
+                ], 500);
+            }
+
+            $data = $response->json();
+
+            // Validar se a resposta tem os dados esperados
+            if (! isset($data['status'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Resposta inválida do PJeCalc',
+                    'error' => 'Formato de resposta não reconhecido',
+                ], 500);
+            }
+
+            // Criar registro do relatório
+            $report = ServiceOrderReport::create([
+                'service_order_id' => $serviceOrder->id,
+                'numero_calculo' => $data['numeroCalculo'] ?? $validated['numero_calculo'],
+                'tipo_relatorio' => $data['tipoRelatorio'] ?? $tipoRelatorio,
+                'formato' => $data['formato'] ?? $formato,
+                'status' => $data['status'] ?? 'GERADO',
+                'data_geracao' => isset($data['dataGeracao'])
+                    ? \Carbon\Carbon::createFromFormat('d/m/Y H:i:s', $data['dataGeracao'])
+                    : now(),
+                'html_content' => $data['html'] ?? null,
+                'dados_estruturados' => $data,
+                'tamanho_bytes' => $data['tamanho'] ?? null,
+                'url_direta' => $data['urlDireta'] ?? null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Relatório gerado e salvo com sucesso',
+                'data' => [
+                    'report_id' => $report->id,
+                    'service_order_id' => $serviceOrder->id,
+                    'numero_calculo' => $report->numero_calculo,
+                    'tipo_relatorio' => $report->tipo_relatorio,
+                    'data_geracao' => $report->data_geracao->format('d/m/Y H:i:s'),
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao processar relatório',
                 'error' => $e->getMessage(),
             ], 500);
         }
