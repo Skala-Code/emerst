@@ -69,7 +69,7 @@ class ExcelExportService
         // Dados
         $row = 2;
         foreach ($processes as $process) {
-            $sheet->setCellValue('A' . $row, $process->number);
+            $sheet->setCellValue('A' . $row, $process->processo);
             $sheet->setCellValue('B' . $row, $process->title);
             $sheet->setCellValue('C' . $row, $process->company?->name);
             $sheet->setCellValue('D' . $row, $process->office?->name);
@@ -117,7 +117,7 @@ class ExcelExportService
         // Dados
         $row = 2;
         foreach ($processes as $process) {
-            $sheet->setCellValue('A' . $row, $process->number);
+            $sheet->setCellValue('A' . $row, $process->processo);
             $sheet->setCellValue('B' . $row, $process->employee_function);
             $sheet->setCellValue('C' . $row, $process->city);
             $sheet->setCellValue('D' . $row, $process->state);
@@ -179,7 +179,7 @@ class ExcelExportService
         $row = 2;
         foreach ($processes as $process) {
             foreach ($process->serviceOrders as $serviceOrder) {
-                $sheet->setCellValue('A' . $row, $process->number);
+                $sheet->setCellValue('A' . $row, $process->processo);
                 $sheet->setCellValue('B' . $row, $serviceOrder->number);
                 $sheet->setCellValue('C' . $row, $serviceOrder->special_interval_operators ?? 0);
                 $sheet->setCellValue('D' . $row, $serviceOrder->he_int_intrajornada_384 ?? 0);
@@ -247,7 +247,7 @@ class ExcelExportService
 
         $row = 2;
         foreach ($processes as $process) {
-            $sheet->setCellValue('A' . $row, $process->number);
+            $sheet->setCellValue('A' . $row, $process->processo);
             $sheet->setCellValue('B' . $row, $process->interest_rate ?? 0);
             $sheet->setCellValue('C' . $row, $process->termination_to_filing_tr ?? 0);
             $sheet->setCellValue('D' . $row, $process->filing_to_current_tr ?? 0);
@@ -310,7 +310,7 @@ class ExcelExportService
 
         $row = 2;
         foreach ($processes as $process) {
-            $sheet->setCellValue('A' . $row, $process->number);
+            $sheet->setCellValue('A' . $row, $process->processo);
             $sheet->setCellValue('B' . $row, $process->initial_provision ?? 0);
             $sheet->setCellValue('C' . $row, $process->sentence_provision ?? 0);
             $sheet->setCellValue('D' . $row, $process->trt_provision ?? 0);

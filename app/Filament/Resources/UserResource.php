@@ -10,6 +10,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class UserResource extends Resource
 {
@@ -97,15 +99,32 @@ class UserResource extends Resource
                                         'financeiro' => 'Financeiro',
                                     ])
                                     ->columnSpan(1),
+                            ])
+                            ->columns(2),
+
+                        Forms\Components\Tabs\Tab::make('Permissões e Acessos')
+                            ->schema([
                                 Forms\Components\Select::make('roles')
-                                    ->label('Perfis Autorizados')
+                                    ->label('Perfis (Roles)')
                                     ->relationship('roles', 'name')
                                     ->multiple()
                                     ->preload()
                                     ->searchable()
-                                    ->columnSpan(2),
+                                    ->required()
+                                    ->helperText('Selecione um ou mais perfis. Os perfis concedem grupos de permissões.')
+                                    ->getOptionLabelFromRecordUsing(fn ($record) => ucfirst(str_replace('-', ' ', $record->name)))
+                                    ->columnSpanFull(),
+                                
+                                Forms\Components\Select::make('permissions')
+                                    ->label('Permissões Individuais')
+                                    ->relationship('permissions', 'name')
+                                    ->multiple()
+                                    ->preload()
+                                    ->searchable()
+                                    ->helperText('Permissões específicas além dos perfis. Normalmente não é necessário se os perfis já cobrem as necessidades.')
+                                    ->columnSpanFull(),
                             ])
-                            ->columns(2),
+                            ->icon('heroicon-o-shield-check'),
                     ])
                     ->columnSpanFull(),
             ]);
@@ -124,8 +143,9 @@ class UserResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('roles.name')
-                    ->label('Roles')
+                    ->label('Perfis')
                     ->badge()
+                    ->separator(',')
                     ->color(fn (string $state): string => match ($state) {
                         'super-admin' => 'danger',
                         'admin' => 'warning',
@@ -133,7 +153,9 @@ class UserResource extends Resource
                         'colaborador' => 'info',
                         'cliente' => 'gray',
                         default => 'primary',
-                    }),
+                    })
+                    ->formatStateUsing(fn ($state) => ucfirst(str_replace('-', ' ', $state)))
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('email_verified_at')
                     ->label('E-mail Verificado')
                     ->dateTime()
@@ -145,7 +167,12 @@ class UserResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('roles')
+                    ->label('Perfil')
+                    ->relationship('roles', 'name')
+                    ->multiple()
+                    ->preload()
+                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

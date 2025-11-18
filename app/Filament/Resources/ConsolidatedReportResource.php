@@ -43,7 +43,7 @@ class ConsolidatedReportResource extends Resource
                     ->sortable()
                     ->weight('bold'),
 
-                Tables\Columns\TextColumn::make('process.number')
+                Tables\Columns\TextColumn::make('process.processo')
                     ->label('Nº Processo')
                     ->searchable()
                     ->sortable(),

@@ -57,7 +57,7 @@ class ServiceOrderResource extends Resource
                                 ->schema([
                                     Forms\Components\Select::make('process_id')
                                         ->label('Processo')
-                                        ->relationship('process', 'number')
+                                        ->relationship('process', 'processo')
                                         ->getOptionLabelFromRecordUsing(fn ($record) => $record ? $record->display_name : '')
                                         ->required()
                                         ->searchable()
@@ -1368,7 +1368,7 @@ class ServiceOrderResource extends Resource
 
                 Tables\Filters\SelectFilter::make('process')
                     ->label('Processo')
-                    ->relationship('process', 'number')
+                    ->relationship('process', 'processo')
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record ? $record->display_name : '')
                     ->searchable()
                     ->preload(),
