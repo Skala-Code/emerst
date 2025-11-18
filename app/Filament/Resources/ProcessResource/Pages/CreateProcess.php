@@ -9,4 +9,14 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProcess extends CreateRecord
 {
     protected static string $resource = ProcessResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('view', ['record' => $this->record]);
+    }
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'Processo criado com sucesso!';
+    }
 }

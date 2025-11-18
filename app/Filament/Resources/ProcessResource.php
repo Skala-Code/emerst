@@ -47,7 +47,7 @@ class ProcessResource extends Resource
                                         Forms\Components\Actions\Action::make('buscarApi')
                                             ->label('Buscar na API')
                                             ->icon('heroicon-o-arrow-path')
-                                            ->action(function ($state, $set) {
+                                            ->action(function ($state, $set, $get) {
                                                 if (!$state) {
                                                     Notification::make()
                                                         ->title('Informe o número do processo')
@@ -56,31 +56,40 @@ class ProcessResource extends Resource
                                                     return;
                                                 }
 
-                                                $trtService = new TrtApiService();
-                                                $dados = $trtService->consultarProcesso($state);
+                                                try {
+                                                    $trtService = new TrtApiService();
+                                                    $dados = $trtService->consultarProcesso($state);
 
-                                                if ($dados) {
-                                                    // Preenche todos os campos com os dados da API
-                                                    $set('trt', $dados['trt'] ?? null);
-                                                    $set('classe', $dados['classe'] ?? null);
-                                                    $set('orgao_julgador', $dados['orgao_julgador'] ?? null);
-                                                    $set('valor_causa', $dados['valor_causa'] ?? null);
-                                                    $set('autuado', $dados['autuado'] ?? null);
-                                                    $set('distribuido', $dados['distribuido'] ?? null);
-                                                    $set('assuntos', $dados['assuntos'] ?? null);
-                                                    $set('reclamantes', $dados['reclamantes'] ?? []);
-                                                    $set('reclamados', $dados['reclamados'] ?? []);
-                                                    $set('outros_interessados', $dados['outros_interessados'] ?? []);
-                                                    $set('sincronizado', true);
-                                                    $set('ultima_atualizacao_api', now());
+                                                    if ($dados) {
+                                                        // Preenche todos os campos com os dados da API
+                                                        $set('trt', $dados['trt'] ?? null);
+                                                        $set('classe', $dados['classe'] ?? null);
+                                                        $set('orgao_julgador', $dados['orgao_julgador'] ?? null);
+                                                        $set('valor_causa', $dados['valor_causa'] ?? null);
+                                                        $set('autuado', $dados['autuado'] ?? null);
+                                                        $set('distribuido', $dados['distribuido'] ?? null);
+                                                        $set('assuntos', $dados['assuntos'] ?? null);
+                                                        $set('reclamantes', $dados['reclamantes'] ?? []);
+                                                        $set('reclamados', $dados['reclamados'] ?? []);
+                                                        $set('outros_interessados', $dados['outros_interessados'] ?? []);
+                                                        $set('sincronizado', true);
+                                                        $set('ultima_atualizacao_api', now());
 
+                                                        Notification::make()
+                                                            ->title('Dados importados com sucesso!')
+                                                            ->success()
+                                                            ->send();
+                                                    } else {
+                                                        Notification::make()
+                                                            ->title('Processo não encontrado na API')
+                                                            ->body('Verifique se o número do processo está correto ou se a API está disponível.')
+                                                            ->danger()
+                                                            ->send();
+                                                    }
+                                                } catch (\Exception $e) {
                                                     Notification::make()
-                                                        ->title('Dados importados com sucesso!')
-                                                        ->success()
-                                                        ->send();
-                                                } else {
-                                                    Notification::make()
-                                                        ->title('Processo não encontrado na API')
+                                                        ->title('Erro ao consultar API')
+                                                        ->body('Erro: ' . $e->getMessage())
                                                         ->danger()
                                                         ->send();
                                                 }

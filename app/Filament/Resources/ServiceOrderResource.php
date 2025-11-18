@@ -61,9 +61,7 @@ class ServiceOrderResource extends Resource
                                         ->getOptionLabelFromRecordUsing(fn ($record) => $record ? $record->display_name : '')
                                         ->required()
                                         ->searchable()
-                                        ->preload()
-                                        ->reactive()
-                                        ->afterStateUpdated(fn (callable $set) => $set('lawyer_id', null)),
+                                        ->preload(),
                                     Forms\Components\Select::make('lawyer_id')
                                         ->label('Advogado Criador')
                                         ->relationship('lawyer', 'name')
