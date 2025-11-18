@@ -66,19 +66,9 @@ class ServiceOrderResource extends Resource
                                         ->afterStateUpdated(fn (callable $set) => $set('lawyer_id', null)),
                                     Forms\Components\Select::make('lawyer_id')
                                         ->label('Advogado Criador')
-                                        ->options(function (callable $get) {
-                                            $processId = $get('process_id');
-                                            if (! $processId) {
-                                                return [];
-                                            }
-                                            $process = Process::find($processId);
-                                            if (! $process) {
-                                                return [];
-                                            }
-
-                                            return Lawyer::where('office_id', $process->office_id)->pluck('name', 'id');
-                                        })
-                                        ->searchable(),
+                                        ->relationship('lawyer', 'name')
+                                        ->searchable()
+                                        ->preload(),
                                     Forms\Components\TextInput::make('number')
                                         ->label('Número da OS')
                                         ->required()
