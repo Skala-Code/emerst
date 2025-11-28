@@ -34,8 +34,8 @@ class MicrosoftAuthController extends Controller
                     ->with('error', 'Você precisa estar logado para conectar sua conta Microsoft.');
             }
 
-            // Calculate token expiration (usually 3600 seconds)
-            $expiresIn = 3600; // Default 1 hour, adjust if provided by Microsoft
+            // Calculate token expiration from Microsoft response
+            $expiresIn = $microsoftUser->expiresIn ?? 3600; // Default 1 hour if not provided
             
             $user->update([
                 'microsoft_token' => $microsoftUser->token,
