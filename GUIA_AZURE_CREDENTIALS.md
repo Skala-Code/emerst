@@ -18,7 +18,7 @@
 2. Clique em **"App registrations"** (Registros de aplicativo)
 3. Clique no botão **"+ New registration"** (+ Novo registro)
 
-### Passo 3: Configurar o App Registration
+ Passo 3: Configurar o App Registration
 
 Preencha os campos:
 

@@ -72,11 +72,21 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('/favicon-32x32.png'))
             ->brandLogo(fn () => view('components.logo'))
             ->navigationGroups([
+                'Comunicação',
                 'Gestão',
                 'Processos',
                 'Administração',
                 'Documentos',
                 'Configurações',
+            ])
+            ->navigationItems([
+                \Filament\Navigation\NavigationItem::make()
+                    ->label('Conectar Microsoft')
+                    ->icon('heroicon-o-link')
+                    ->url(fn () => route('microsoft.redirect'))
+                    ->visible(fn () => auth()->check() && !auth()->user()?->isMicrosoftConnected())
+                    ->group('Comunicação')
+                    ->sort(1),
             ])
             ->colors([
                 'primary' => Color::Blue,
@@ -90,6 +100,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                \App\Filament\Widgets\MicrosoftConnectionWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

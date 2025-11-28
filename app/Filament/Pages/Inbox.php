@@ -25,7 +25,8 @@ class Inbox extends Page implements HasTable
     protected static string $view = 'filament.pages.inbox';
     protected static ?string $navigationLabel = 'Caixa de Entrada';
     protected static ?string $navigationGroup = 'Comunicação';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
+    protected static bool $shouldRegisterNavigation = true;
 
     public ?Email $selectedEmail = null;
 
