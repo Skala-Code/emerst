@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Tables\Actions\Action as TableAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -116,7 +117,7 @@ class Inbox extends Page implements HasTable
                     ->label('Recebido em')
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
-                TextColumn::make('is_read')
+                IconColumn::make('is_read')
                     ->label('Lido')
                     ->boolean()
                     ->sortable(),
