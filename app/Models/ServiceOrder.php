@@ -13,6 +13,7 @@ class ServiceOrder extends Model
     protected $fillable = [
         'process_id',
         'lawyer_id',
+        'email_id',
         'current_responsible_id',
         'number',
         'title',
@@ -410,6 +411,11 @@ class ServiceOrder extends Model
     public function reports(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(ServiceOrderReport::class);
+    }
+
+    public function email(): BelongsTo
+    {
+        return $this->belongsTo(Email::class);
     }
 
     // Métodos úteis para workflow

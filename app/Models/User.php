@@ -31,6 +31,9 @@ class User extends Authenticatable implements FilamentUser
         'team',
         'email',
         'password',
+        'microsoft_token',
+        'microsoft_refresh_token',
+        'microsoft_token_expires_at',
     ];
 
     /**
@@ -55,6 +58,7 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'admission_date' => 'date',
             'termination_date' => 'date',
+            'microsoft_token_expires_at' => 'datetime',
         ];
     }
 
@@ -84,5 +88,15 @@ class User extends Authenticatable implements FilamentUser
     public function lawyer()
     {
         return $this->hasOne(Lawyer::class);
+    }
+
+    public function emails()
+    {
+        return $this->hasMany(Email::class);
+    }
+
+    public function isMicrosoftConnected(): bool
+    {
+        return !empty($this->microsoft_token);
     }
 }

@@ -55,6 +55,7 @@ class ServiceOrderResource extends Resource
                         ->schema([
                             Forms\Components\Section::make('Dados da Ordem de Serviço')
                                 ->schema([
+                                    Forms\Components\Hidden::make('email_id'),
                                     Forms\Components\Select::make('process_id')
                                         ->label('Processo')
                                         ->relationship('process', 'processo')

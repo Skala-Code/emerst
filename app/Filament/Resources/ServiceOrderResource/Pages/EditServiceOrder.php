@@ -15,6 +15,15 @@ class EditServiceOrder extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('view_email')
+                ->label('Ver Email')
+                ->icon('heroicon-o-envelope')
+                ->color('info')
+                ->visible(fn () => $this->record->email_id)
+                ->modalHeading('Email Vinculado')
+                ->modalContent(fn () => view('filament.components.email-view', ['email' => $this->record->email]))
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Fechar'),
             Actions\Action::make('open_pjecalc')
                 ->label('Abrir PJeCalc')
                 ->icon('heroicon-o-calculator')

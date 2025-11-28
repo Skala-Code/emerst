@@ -29,5 +29,10 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+        // Register SocialiteProviders Microsoft event
+        $this->app['events']->listen(
+            \SocialiteProviders\Manager\SocialiteWasCalled::class,
+            'SocialiteProviders\\Microsoft\\MicrosoftExtendSocialite@handle'
+        );
     }
 }
