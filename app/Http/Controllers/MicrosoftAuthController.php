@@ -25,8 +25,7 @@ class MicrosoftAuthController extends Controller
     public function callback()
     {
         try {
-            $microsoftUser = \Laravel\Socialite\Facades\Socialite::driver('microsoft')->user();
-            
+            // Check if user is authenticated
             $user = Auth::user();
             
             if (!$user) {
@@ -34,10 +33,15 @@ class MicrosoftAuthController extends Controller
                     ->with('error', 'Você precisa estar logado para conectar sua conta Microsoft.');
             }
 
+            // Get Microsoft user data
+            $microsoftUser = \Laravel\Socialite\Facades\Socialite::driver('microsoft')->user();
+            
             // Calculate token expiration from Microsoft response
             $expiresIn = $microsoftUser->expiresIn ?? 3600; // Default 1 hour if not provided
             
+            // Update user with Microsoft tokens
             $user->update([
+                'microsoft_id' => $microsoftUser->id,
                 'microsoft_token' => $microsoftUser->token,
                 'microsoft_refresh_token' => $microsoftUser->refreshToken,
                 'microsoft_token_expires_at' => now()->addSeconds($expiresIn),
@@ -45,7 +49,17 @@ class MicrosoftAuthController extends Controller
 
             return redirect()->route('filament.admin.pages.inbox')
                 ->with('success', 'Conta Microsoft conectada com sucesso!');
+        } catch (\Laravel\Socialite\Two\InvalidStateException $e) {
+            // Handle state mismatch (usually means session expired or CSRF issue)
+            return redirect()->route('filament.admin.pages.inbox')
+                ->with('error', 'Sessão expirada. Por favor, tente conectar novamente.');
         } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Microsoft OAuth Error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'user_id' => Auth::id(),
+            ]);
+            
             return redirect()->route('filament.admin.pages.inbox')
                 ->with('error', 'Erro ao conectar conta Microsoft: ' . $e->getMessage());
         }

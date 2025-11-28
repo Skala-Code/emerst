@@ -16,5 +16,7 @@ Route::middleware(['auth'])->group(function () {
     // Microsoft OAuth routes
     Route::get('/auth/microsoft', [\App\Http\Controllers\MicrosoftAuthController::class, 'redirect'])->name('microsoft.redirect');
     Route::get('/auth/microsoft/callback', [\App\Http\Controllers\MicrosoftAuthController::class, 'callback'])->name('microsoft.callback');
+    // Route to handle Azure redirect to /auth (if configured that way in Azure Portal)
+    Route::get('/auth', [\App\Http\Controllers\MicrosoftAuthController::class, 'callback'])->name('microsoft.callback.alternative');
     Route::post('/auth/microsoft/disconnect', [\App\Http\Controllers\MicrosoftAuthController::class, 'disconnect'])->name('microsoft.disconnect');
 });
