@@ -1,5 +1,5 @@
 <x-filament-panels::page>
-    <div class="space-y-4" x-data="{ emailBodyOpen: false }">
+    <div class="space-y-4">
         @if($this->linkedEmail)
             <x-filament::section class="!mb-4">
                 <x-slot name="heading">
@@ -28,36 +28,26 @@
                         </div>
                     </div>
                     
-                    <div 
-                        x-show="emailBodyOpen"
-                        x-transition
-                        class="border-t pt-3 mt-3"
-                    >
-                        <div class="prose prose-sm max-w-none dark:prose-invert">
-                            <div class="max-h-[400px] overflow-y-auto p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                                {!! $this->linkedEmail->body_html ?? nl2br(e($this->linkedEmail->body_text)) !!}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t pt-3">
-                        <button 
-                            type="button"
-                            @click="emailBodyOpen = !emailBodyOpen"
-                            class="w-full text-left text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center justify-between"
-                        >
-                            <span x-text="emailBodyOpen ? 'Ocultar corpo do email' : 'Ver corpo do email'"></span>
+                    <details class="border-t pt-3 mt-3">
+                        <summary class="cursor-pointer text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center justify-between list-none">
+                            <span>Ver corpo do email</span>
                             <svg 
-                                :class="{ 'rotate-180': emailBodyOpen }"
-                                class="w-4 h-4 transition-transform"
+                                class="w-4 h-4 transition-transform details-arrow"
                                 fill="none" 
                                 stroke="currentColor" 
                                 viewBox="0 0 24 24"
                             >
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
-                        </button>
-                    </div>
+                        </summary>
+                        <div class="mt-3">
+                            <div class="prose prose-sm max-w-none dark:prose-invert">
+                                <div class="max-h-[400px] overflow-y-auto p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                    {!! $this->linkedEmail->body_html ?? nl2br(e($this->linkedEmail->body_text)) !!}
+                                </div>
+                            </div>
+                        </div>
+                    </details>
                 </div>
             </x-filament::section>
         @endif
@@ -71,5 +61,19 @@
             />
         </form>
     </div>
+    
+    <style>
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        details[open] .details-arrow {
+            transform: rotate(180deg);
+        }
+        
+        details summary::marker {
+            display: none;
+        }
+    </style>
 </x-filament-panels::page>
 
