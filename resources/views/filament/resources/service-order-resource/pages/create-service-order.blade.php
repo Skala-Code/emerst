@@ -28,11 +28,11 @@
                         </div>
                     </div>
                     
-                    <details class="border-t pt-3 mt-3">
+                    <details class="email-body-details border-t pt-3 mt-3">
                         <summary class="cursor-pointer text-sm text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium flex items-center justify-between list-none">
                             <span>Ver corpo do email</span>
                             <svg 
-                                class="w-4 h-4 transition-transform details-arrow"
+                                class="w-4 h-4 transition-transform email-details-arrow"
                                 fill="none" 
                                 stroke="currentColor" 
                                 viewBox="0 0 24 24"
@@ -63,15 +63,15 @@
     </div>
     
     <style>
-        details summary::-webkit-details-marker {
+        .email-body-details summary::-webkit-details-marker {
             display: none;
         }
         
-        details[open] .details-arrow {
+        .email-body-details[open] .email-details-arrow {
             transform: rotate(180deg);
         }
         
-        details summary::marker {
+        .email-body-details summary::marker {
             display: none;
         }
     </style>
