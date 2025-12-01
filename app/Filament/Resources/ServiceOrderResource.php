@@ -62,17 +62,20 @@ class ServiceOrderResource extends Resource
                                         ->getOptionLabelFromRecordUsing(fn ($record) => $record ? $record->display_name : '')
                                         ->required()
                                         ->searchable()
-                                        ->preload(),
+                                        ->preload()
+                                        ->columnSpan(['md' => 2]),
                                     Forms\Components\Select::make('lawyer_id')
                                         ->label('Advogado Criador')
                                         ->relationship('lawyer', 'name')
                                         ->searchable()
-                                        ->preload(),
+                                        ->preload()
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('number')
                                         ->label('Número da OS')
                                         ->required()
                                         ->unique(ignoreRecord: true)
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('title')
                                         ->label('Título')
                                         ->required()
@@ -80,10 +83,10 @@ class ServiceOrderResource extends Resource
                                         ->columnSpanFull(),
                                     Forms\Components\Textarea::make('description')
                                         ->label('Descrição')
-                                        ->rows(3)
+                                        ->rows(2)
                                         ->columnSpanFull(),
                                 ])
-                                ->columns(3),
+                                ->columns(['default' => 1, 'md' => 3]),
 
                             Forms\Components\Section::make('Gerenciador')
                                 ->schema([
@@ -133,7 +136,8 @@ class ServiceOrderResource extends Resource
                                             'urgent' => 'Urgente',
                                         ])
                                         ->default('medium')
-                                        ->required(),
+                                        ->required()
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('status')
                                         ->label('Status')
                                         ->options([
@@ -144,11 +148,13 @@ class ServiceOrderResource extends Resource
                                             'rejected' => 'Rejeitada',
                                         ])
                                         ->default('pending')
-                                        ->required(),
+                                        ->required()
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DatePicker::make('due_date')
-                                        ->label('Data de Vencimento'),
+                                        ->label('Data de Vencimento')
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(3),
+                                ->columns(['default' => 1, 'md' => 3]),
                         ]),
 
                     // === ABA 2: WORKFLOW E RESPONSABILIDADES ===
@@ -160,7 +166,8 @@ class ServiceOrderResource extends Resource
                                         ->label('Responsável Atual')
                                         ->relationship('currentResponsible', 'name')
                                         ->searchable()
-                                        ->preload(),
+                                        ->preload()
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('workflow_stage')
                                         ->label('Etapa do Workflow')
                                         ->options([
@@ -171,30 +178,35 @@ class ServiceOrderResource extends Resource
                                             'completed' => 'Concluída',
                                             'rejected' => 'Rejeitada',
                                         ])
-                                        ->default('created'),
+                                        ->default('created')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Textarea::make('current_notes')
                                         ->label('Observações Atuais')
-                                        ->rows(3)
+                                        ->rows(2)
                                         ->columnSpanFull(),
                                 ])
-                                ->columns(2),
+                                ->columns(['default' => 1, 'md' => 2]),
 
                             Forms\Components\Section::make('Controle de Tempo')
                                 ->schema([
                                     Forms\Components\TextInput::make('estimated_hours')
                                         ->label('Horas Estimadas')
                                         ->numeric()
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('actual_hours')
                                         ->label('Horas Realizadas')
                                         ->numeric()
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DateTimePicker::make('started_at')
-                                        ->label('Iniciado em'),
+                                        ->label('Iniciado em')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DateTimePicker::make('completed_at')
-                                        ->label('Concluído em'),
+                                        ->label('Concluído em')
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(2),
+                                ->columns(['default' => 1, 'md' => 4]),
                         ]),
 
                     // === ABA 3: CONTROLE DE CÁLCULO ===
@@ -210,7 +222,8 @@ class ServiceOrderResource extends Resource
                                             'concluido' => 'Concluído',
                                             'revisao' => 'Em Revisão',
                                             'aprovado' => 'Aprovado',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('calculation_phase')
                                         ->label('Fase do Cálculo')
                                         ->options([
@@ -220,29 +233,34 @@ class ServiceOrderResource extends Resource
                                             'acordao_tst' => 'Acórdão TST',
                                             'execucao' => 'Execução',
                                             'acordo' => 'Acordo',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Toggle::make('validation_passed')
-                                        ->label('Validação Aprovada'),
+                                        ->label('Validação Aprovada')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('errors_in_benefits_count')
                                         ->label('Quantidade de Erros nos Benefícios')
-                                        ->numeric(),
+                                        ->numeric()
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(2),
+                                ->columns(['default' => 1, 'md' => 4]),
 
                             Forms\Components\Section::make('Dados do Cálculo')
                                 ->schema([
                                     Forms\Components\DateTimePicker::make('calculation_date')
-                                        ->label('Data do Cálculo'),
+                                        ->label('Data do Cálculo')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('calculated_by')
                                         ->label('Calculado por')
                                         ->relationship('calculatedBy', 'name')
-                                        ->searchable(),
+                                        ->searchable()
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Textarea::make('calculation_notes')
                                         ->label('Observações do Cálculo')
-                                        ->rows(3)
+                                        ->rows(2)
                                         ->columnSpanFull(),
                                 ])
-                                ->columns(2),
+                                ->columns(['default' => 1, 'md' => 2]),
                         ]),
 
                     // === ABA 4: CÁLCULO ANALISADO ===
@@ -563,7 +581,8 @@ class ServiceOrderResource extends Resource
                                                 $judicialDeadline = $publicationDate->addWeekdays($days);
                                                 $set('judicial_deadline', $judicialDeadline->format('Y-m-d'));
                                             }
-                                        }),
+                                        })
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('deadline_days')
                                         ->label('Dias de Prazo (dias úteis)')
                                         ->numeric()
@@ -575,15 +594,18 @@ class ServiceOrderResource extends Resource
                                                 $judicialDeadline = $date->addWeekdays($state);
                                                 $set('judicial_deadline', $judicialDeadline->format('Y-m-d'));
                                             }
-                                        }),
+                                        })
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DatePicker::make('judicial_deadline')
                                         ->label('Prazo Judicial')
                                         ->disabled()
-                                        ->dehydrated(),
+                                        ->dehydrated()
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DatePicker::make('internal_deadline')
-                                        ->label('Prazo Interno'),
+                                        ->label('Prazo Interno')
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(2)
+                                ->columns(['default' => 1, 'md' => 4])
                                 ->description('O Prazo Judicial é calculado automaticamente com base na Data de Publicação + Dias de Prazo (considerando apenas dias úteis).'),
                         ]),
 
@@ -794,10 +816,12 @@ class ServiceOrderResource extends Resource
                             Forms\Components\Section::make('Informações Técnicas')
                                 ->schema([
                                     Forms\Components\Toggle::make('client_is_first_defendant')
-                                        ->label('Cliente é 01ª Reclamada'),
+                                        ->label('Cliente é 01ª Reclamada')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('number_of_substitutes')
                                         ->label('Nº de Substituídos')
-                                        ->numeric(),
+                                        ->numeric()
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('work_providence')
                                         ->label('Providência do Trabalho Efetuada')
                                         ->options([
@@ -809,26 +833,31 @@ class ServiceOrderResource extends Resource
                                             'manifestacao' => 'Manifestação',
                                             'outra' => 'Outra',
                                         ])
-                                        ->searchable(),
+                                        ->searchable()
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(3),
+                                ->columns(['default' => 1, 'md' => 3]),
 
                             Forms\Components\Section::make('Concordância com a Parte Adversa')
                                 ->schema([
                                     Forms\Components\Toggle::make('agreement_with_adverse_party')
-                                        ->label('Há Concordância?'),
+                                        ->label('Há Concordância?')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DatePicker::make('agreement_date')
-                                        ->label('Data'),
+                                        ->label('Data')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('agreement_value')
                                         ->label('Valor')
                                         ->numeric()
                                         ->prefix('R$')
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('agreement_id_reference')
                                         ->label('Qual ID?')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(4)
+                                ->columns(['default' => 1, 'md' => 4])
                                 ->collapsible(),
 
                             Forms\Components\Section::make('Dados do Cálculo Apresentado')
@@ -914,12 +943,14 @@ class ServiceOrderResource extends Resource
                                             'variavel' => 'Variável',
                                             'misto' => 'Misto',
                                             'avulso' => 'Avulso',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('billing_economic_group')
                                         ->label('Grupo Econômico')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(2),
+                                ->columns(['default' => 1, 'md' => 2]),
 
                             Forms\Components\Section::make('Dados do Solicitante')
                                 ->schema([
