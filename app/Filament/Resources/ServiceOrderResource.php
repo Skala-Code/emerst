@@ -616,7 +616,7 @@ class ServiceOrderResource extends Resource
                                 ->schema([
                                     Forms\Components\Textarea::make('pre_analysis_text')
                                         ->label('Texto da Pré-Análise')
-                                        ->rows(5)
+                                        ->rows(3)
                                         ->columnSpanFull(),
                                 ])
                                 ->collapsible(),
@@ -632,7 +632,8 @@ class ServiceOrderResource extends Resource
                                             'despacho' => 'Despacho',
                                             'decisao' => 'Decisão',
                                             'outro' => 'Outro',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('decision_summary')
                                         ->label('Resumo?')
                                         ->options([
@@ -640,22 +641,25 @@ class ServiceOrderResource extends Resource
                                             'parcialmente_procedente' => 'Parcialmente Procedente',
                                             'improcedente' => 'Improcedente',
                                             'negado' => 'Negado',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('decision_id_reference')
                                         ->label('Qual ID?')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Textarea::make('decision_disposition')
                                         ->label('Dispositivo da Decisão')
-                                        ->rows(5)
+                                        ->rows(3)
                                         ->columnSpanFull(),
                                 ])
-                                ->columns(3)
+                                ->columns(['default' => 1, 'md' => 3])
                                 ->collapsible(),
 
                             Forms\Components\Section::make('Atualização/Juros Deferido')
                                 ->schema([
                                     Forms\Components\Toggle::make('interest_granted')
-                                        ->label('Deferido?'),
+                                        ->label('Deferido?')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('interest_type')
                                         ->label('Qual?')
                                         ->options([
@@ -664,30 +668,35 @@ class ServiceOrderResource extends Resource
                                             'ipca_e' => 'IPCA-E',
                                             'selic' => 'SELIC',
                                             'outro' => 'Outro',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('interest_id_reference')
                                         ->label('Qual ID?')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(3)
+                                ->columns(['default' => 1, 'md' => 3])
                                 ->collapsible(),
 
                             Forms\Components\Section::make('Prescrição Deferida')
                                 ->schema([
                                     Forms\Components\Toggle::make('prescription_granted')
-                                        ->label('Deferida?'),
+                                        ->label('Deferida?')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('prescription_type')
                                         ->label('Qual?')
                                         ->options([
                                             'quinquenal' => 'Quinquenal',
                                             'bienal' => 'Bienal',
                                             'ambas' => 'Ambas',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('prescription_id_reference')
                                         ->label('Qual ID?')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(3)
+                                ->columns(['default' => 1, 'md' => 3])
                                 ->collapsible(),
 
                             Forms\Components\Section::make('Responsabilidade Cliente')
@@ -699,35 +708,43 @@ class ServiceOrderResource extends Resource
                                             'subsidiaria' => 'Subsidiária',
                                             'solidaria' => 'Solidária',
                                             'periodo_limitado' => 'Período Limitado',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DatePicker::make('client_responsibility_period_start')
-                                        ->label('Período De'),
+                                        ->label('Período De')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DatePicker::make('client_responsibility_period_end')
-                                        ->label('Período Até'),
+                                        ->label('Período Até')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('client_responsibility_decision_type')
                                         ->label('Qual? (Sentença/Acórdão)')
                                         ->options([
                                             'sentenca' => 'Sentença',
                                             'acordao' => 'Acórdão',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('client_responsibility_id_reference')
                                         ->label('Qual ID?')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(3)
+                                ->columns(['default' => 1, 'md' => 5])
                                 ->collapsible(),
 
                             Forms\Components\Section::make('Trânsito em Julgado')
                                 ->schema([
                                     Forms\Components\Toggle::make('final_judgment')
-                                        ->label('Transitou em Julgado?'),
+                                        ->label('Transitou em Julgado?')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DatePicker::make('final_judgment_date')
-                                        ->label('Qual Data?'),
+                                        ->label('Qual Data?')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('final_judgment_id_reference')
                                         ->label('Qual ID?')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(3)
+                                ->columns(['default' => 1, 'md' => 3])
                                 ->collapsible(),
 
                             Forms\Components\Section::make('Verbas Deferidas')
@@ -753,19 +770,23 @@ class ServiceOrderResource extends Resource
                             Forms\Components\Section::make('Defender Cálculo Anterior')
                                 ->schema([
                                     Forms\Components\Toggle::make('defend_previous_calculation')
-                                        ->label('Defender?'),
+                                        ->label('Defender?')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DatePicker::make('previous_calculation_date')
-                                        ->label('Data'),
+                                        ->label('Data')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('previous_calculation_value')
                                         ->label('Valor')
                                         ->numeric()
                                         ->prefix('R$')
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('previous_calculation_id_reference')
                                         ->label('Qual ID?')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(4)
+                                ->columns(['default' => 1, 'md' => 4])
                                 ->collapsible(),
 
                             Forms\Components\Section::make('Necessita Documentos')
@@ -776,7 +797,8 @@ class ServiceOrderResource extends Resource
                                             'sim' => 'Sim',
                                             'nao' => 'Não',
                                             'analisar' => 'Analisar',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\CheckboxList::make('required_document_types')
                                         ->label('Qual Tipo?')
                                         ->options([
@@ -787,24 +809,27 @@ class ServiceOrderResource extends Resource
                                             'ctps' => 'CTPS',
                                             'contrato_trabalho' => 'Contrato de Trabalho',
                                         ])
-                                        ->columns(3),
+                                        ->columns(3)
+                                        ->columnSpan(['md' => 2]),
                                     Forms\Components\TextInput::make('required_documents_period_start')
                                         ->label('Período De (mm/aaaa)')
                                         ->mask('99/9999')
-                                        ->maxLength(7),
+                                        ->maxLength(7)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('required_documents_period_end')
                                         ->label('Período Até (mm/aaaa)')
                                         ->mask('99/9999')
-                                        ->maxLength(7),
+                                        ->maxLength(7)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(2)
+                                ->columns(['default' => 1, 'md' => 3])
                                 ->collapsible(),
 
                             Forms\Components\Section::make('Observações')
                                 ->schema([
                                     Forms\Components\Textarea::make('pre_analysis_observation')
                                         ->label('Observação da Pré-Análise')
-                                        ->rows(4)
+                                        ->rows(3)
                                         ->columnSpanFull(),
                                 ])
                                 ->collapsible(),
@@ -982,16 +1007,19 @@ class ServiceOrderResource extends Resource
                                 ->schema([
                                     Forms\Components\TextInput::make('billing_invoice_number')
                                         ->label('Nº Nota Fiscal')
-                                        ->maxLength(255),
+                                        ->maxLength(255)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\DatePicker::make('billing_issue_date')
-                                        ->label('Data Emissão'),
+                                        ->label('Data Emissão')
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('billing_gross_value')
                                         ->label('Valor Bruto')
                                         ->numeric()
                                         ->prefix('R$')
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(3),
+                                ->columns(['default' => 1, 'md' => 3]),
 
                             Forms\Components\Section::make('Custos')
                                 ->schema([
@@ -999,29 +1027,34 @@ class ServiceOrderResource extends Resource
                                         ->label('Custo Técnico Interno')
                                         ->numeric()
                                         ->prefix('R$')
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('billing_external_technical_cost')
                                         ->label('Custo Técnico Externo')
                                         ->numeric()
                                         ->prefix('R$')
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('billing_other_costs')
                                         ->label('Outros Custos')
                                         ->numeric()
                                         ->prefix('R$')
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('billing_tax')
                                         ->label('Imposto')
                                         ->numeric()
                                         ->prefix('R$')
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\TextInput::make('billing_net_total')
                                         ->label('Total Líquido')
                                         ->numeric()
                                         ->prefix('R$')
-                                        ->step(0.01),
+                                        ->step(0.01)
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(3)
+                                ->columns(['default' => 1, 'md' => 5])
                                 ->collapsible(),
 
                             Forms\Components\Section::make('Situação')
@@ -1033,7 +1066,8 @@ class ServiceOrderResource extends Resource
                                             'pendente' => 'Pendente',
                                             'cancelada' => 'Cancelada',
                                             'paga' => 'Paga',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                     Forms\Components\Select::make('billing_reconciliation_status')
                                         ->label('Situação da Conciliação')
                                         ->options([
@@ -1041,9 +1075,10 @@ class ServiceOrderResource extends Resource
                                             'pendente' => 'Pendente',
                                             'divergente' => 'Divergente',
                                             'nao_aplicavel' => 'Não Aplicável',
-                                        ]),
+                                        ])
+                                        ->columnSpan(['md' => 1]),
                                 ])
-                                ->columns(2),
+                                ->columns(['default' => 1, 'md' => 2]),
                         ]),
 
                     // === ABA 9: RELATÓRIO CÁLCULO ===
