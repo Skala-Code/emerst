@@ -57,6 +57,7 @@ class LawyerResource extends Resource
                     ->label('Escritórios')
                     ->relationship('offices', 'name')
                     ->multiple()
+                    ->required()
                     ->searchable()
                     ->preload()
                     ->helperText('Selecione um ou mais escritórios onde este advogado trabalha'),

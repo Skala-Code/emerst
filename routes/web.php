@@ -20,5 +20,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('documents.view');
     
     // Microsoft OAuth disconnect (requires auth)
-    Route::post('/auth/microsoft/disconnect', [\App\Http\Controllers\MicrosoftAuthController::class, 'disconnect'])->name('microsoft.disconnect');
+    Route::post('/auth/microsoft/disconnect/{account?}', [\App\Http\Controllers\MicrosoftAuthController::class, 'disconnect'])->name('microsoft.disconnect');
 });

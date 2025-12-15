@@ -80,13 +80,7 @@ class AdminPanelProvider extends PanelProvider
                 'Configurações',
             ])
             ->navigationItems([
-                \Filament\Navigation\NavigationItem::make()
-                    ->label('Conectar Microsoft')
-                    ->icon('heroicon-o-link')
-                    ->url(fn () => route('microsoft.redirect'))
-                    ->visible(fn () => auth()->check() && !auth()->user()?->isMicrosoftConnected())
-                    ->group('Comunicação')
-                    ->sort(1),
+                // Removed - Microsoft connection is now handled in Inbox page
             ])
             ->colors([
                 'primary' => Color::Blue,

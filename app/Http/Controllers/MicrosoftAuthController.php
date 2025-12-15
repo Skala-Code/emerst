@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\MicrosoftAccount;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -51,15 +52,30 @@ class MicrosoftAuthController extends Controller
             // Calculate token expiration from Microsoft response
             $expiresIn = $microsoftUser->expiresIn ?? 3600; // Default 1 hour if not provided
             
-            // Update user with Microsoft tokens
-            $user->update([
-                'microsoft_id' => $microsoftUser->id,
-                'microsoft_token' => $microsoftUser->token,
-                'microsoft_refresh_token' => $microsoftUser->refreshToken,
-                'microsoft_token_expires_at' => now()->addSeconds($expiresIn),
-            ]);
+            // Get email from Microsoft user
+            $email = $microsoftUser->email ?? $microsoftUser->user['mail'] ?? $microsoftUser->user['userPrincipalName'] ?? null;
+            
+            if (!$email) {
+                throw new \Exception('Não foi possível obter o email da conta Microsoft.');
+            }
+            
+            // Create or update Microsoft account
+            $account = MicrosoftAccount::updateOrCreate(
+                ['email' => $email],
+                [
+                    'microsoft_id' => $microsoftUser->id,
+                    'token' => $microsoftUser->token,
+                    'refresh_token' => $microsoftUser->refreshToken,
+                    'token_expires_at' => now()->addSeconds($expiresIn),
+                    'connected_by_user_id' => $user->id,
+                ]
+            );
 
-            \Log::info('Microsoft OAuth Success', ['user_id' => $user->id]);
+            \Log::info('Microsoft OAuth Success', [
+                'user_id' => $user->id,
+                'microsoft_account_id' => $account->id,
+                'email' => $email,
+            ]);
 
             return redirect()->route('filament.admin.pages.inbox')
                 ->with('success', 'Conta Microsoft conectada com sucesso!');
@@ -89,10 +105,19 @@ class MicrosoftAuthController extends Controller
     /**
      * Disconnect Microsoft account
      */
-    public function disconnect()
+    public function disconnect($accountId = null)
     {
         $user = Auth::user();
         
+        if ($accountId) {
+            // Disconnect specific account
+            $account = MicrosoftAccount::findOrFail($accountId);
+            $account->delete();
+            
+            return redirect()->back()->with('success', 'Conta Microsoft desconectada com sucesso!');
+        }
+        
+        // Legacy: disconnect user's account (for backward compatibility)
         $user->update([
             'microsoft_token' => null,
             'microsoft_refresh_token' => null,

@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Email;
-use App\Models\User;
+use App\Models\MicrosoftAccount;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Microsoft\Graph\Graph;
@@ -12,19 +12,19 @@ use Microsoft\Kiota\Abstractions\ApiException;
 
 class MicrosoftGraphService
 {
-    private User $user;
+    private MicrosoftAccount $account;
 
-    public function __construct(User $user)
+    public function __construct(MicrosoftAccount $account)
     {
-        $this->user = $user;
+        $this->account = $account;
     }
 
     /**
-     * Get access token from user's stored token
+     * Get access token from account's stored token
      */
     private function getAccessToken(): ?string
     {
-        return $this->user->microsoft_token;
+        return $this->account->getAccessToken();
     }
 
     /**
@@ -32,53 +32,7 @@ class MicrosoftGraphService
      */
     public function refreshTokenIfNeeded(): bool
     {
-        // Check if token is expired or will expire soon
-        if (!$this->user->microsoft_token_expires_at || 
-            $this->user->microsoft_token_expires_at->isPast() ||
-            $this->user->microsoft_token_expires_at->diffInMinutes(now()) < 5) {
-            
-            return $this->refreshAccessToken();
-        }
-
-        return true;
-    }
-
-    /**
-     * Refresh access token using refresh token
-     */
-    private function refreshAccessToken(): bool
-    {
-        if (!$this->user->microsoft_refresh_token) {
-            return false;
-        }
-
-        try {
-            $response = Http::asForm()->post('https://login.microsoftonline.com/common/oauth2/v2.0/token', [
-                'client_id' => config('services.microsoft.client_id'),
-                'client_secret' => config('services.microsoft.client_secret'),
-                'grant_type' => 'refresh_token',
-                'refresh_token' => $this->user->microsoft_refresh_token,
-            ]);
-
-            if ($response->successful()) {
-                $data = $response->json();
-                
-                $this->user->update([
-                    'microsoft_token' => $data['access_token'],
-                    'microsoft_refresh_token' => $data['refresh_token'] ?? $this->user->microsoft_refresh_token,
-                    'microsoft_token_expires_at' => now()->addSeconds($data['expires_in']),
-                ]);
-
-                return true;
-            }
-        } catch (\Exception $e) {
-            Log::error('Failed to refresh Microsoft token', [
-                'user_id' => $this->user->id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        return false;
+        return $this->account->refreshTokenIfNeeded();
     }
 
     /**
@@ -106,7 +60,7 @@ class MicrosoftGraphService
             throw new \Exception('Failed to fetch emails: ' . $response->body());
         } catch (\Exception $e) {
             Log::error('Failed to fetch emails from Microsoft Graph', [
-                'user_id' => $this->user->id,
+                'microsoft_account_id' => $this->account->id,
                 'error' => $e->getMessage(),
             ]);
             throw $e;
@@ -126,7 +80,7 @@ class MicrosoftGraphService
                 $email = Email::updateOrCreate(
                     [
                         'message_id' => $emailData['id'],
-                        'user_id' => $this->user->id,
+                        'microsoft_account_id' => $this->account->id,
                     ],
                     [
                         'subject' => $emailData['subject'] ?? '(Sem assunto)',
@@ -162,7 +116,7 @@ class MicrosoftGraphService
                 $synced++;
             } catch (\Exception $e) {
                 Log::error('Failed to sync email', [
-                    'user_id' => $this->user->id,
+                    'microsoft_account_id' => $this->account->id,
                     'email_id' => $emailData['id'] ?? null,
                     'error' => $e->getMessage(),
                 ]);

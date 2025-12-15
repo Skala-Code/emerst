@@ -9,6 +9,7 @@ class Email extends Model
 {
     protected $fillable = [
         'user_id',
+        'microsoft_account_id',
         'service_order_id',
         'message_id',
         'subject',
@@ -41,6 +42,11 @@ class Email extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function microsoftAccount(): BelongsTo
+    {
+        return $this->belongsTo(MicrosoftAccount::class);
     }
 
     public function serviceOrder(): BelongsTo

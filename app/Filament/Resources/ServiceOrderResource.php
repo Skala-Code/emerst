@@ -573,12 +573,11 @@ class ServiceOrderResource extends Resource
                                 ->schema([
                                     Forms\Components\DatePicker::make('publication_date')
                                         ->label('Data Publicação')
-                                        ->reactive()
+                                        ->live()
                                         ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                             $days = $get('deadline_days');
                                             if ($state && $days) {
-                                                $publicationDate = \Carbon\Carbon::parse($state);
-                                                $judicialDeadline = $publicationDate->addWeekdays($days);
+                                                $judicialDeadline = \Carbon\Carbon::parse($state)->copy()->addWeekdays((int) $days);
                                                 $set('judicial_deadline', $judicialDeadline->format('Y-m-d'));
                                             }
                                         })
@@ -586,12 +585,11 @@ class ServiceOrderResource extends Resource
                                     Forms\Components\TextInput::make('deadline_days')
                                         ->label('Dias de Prazo (dias úteis)')
                                         ->numeric()
-                                        ->reactive()
+                                        ->live(debounce: 500)
                                         ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                             $publicationDate = $get('publication_date');
                                             if ($state && $publicationDate) {
-                                                $date = \Carbon\Carbon::parse($publicationDate);
-                                                $judicialDeadline = $date->addWeekdays($state);
+                                                $judicialDeadline = \Carbon\Carbon::parse($publicationDate)->copy()->addWeekdays((int) $state);
                                                 $set('judicial_deadline', $judicialDeadline->format('Y-m-d'));
                                             }
                                         })

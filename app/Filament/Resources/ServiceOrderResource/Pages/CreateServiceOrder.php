@@ -58,4 +58,12 @@ class CreateServiceOrder extends CreateRecord
 
         return $data;
     }
+
+    protected function afterCreate(): void
+    {
+        if ($this->record->email_id) {
+            Email::where('id', $this->record->email_id)
+                ->update(['service_order_id' => $this->record->id]);
+        }
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\Email;
+use App\Models\MicrosoftAccount;
 use App\Models\Process;
 use App\Services\MicrosoftGraphService;
 use Filament\Actions\Action;
@@ -15,7 +16,9 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class Inbox extends Page implements HasTable
@@ -33,10 +36,12 @@ class Inbox extends Page implements HasTable
 
     public function mount(): void
     {
-        if (!auth()->user()->isMicrosoftConnected()) {
+        $connectedAccounts = MicrosoftAccount::whereNotNull('token')->count();
+        
+        if ($connectedAccounts === 0) {
             Notification::make()
-                ->title('Conecte sua conta Microsoft')
-                ->body('Você precisa conectar sua conta Microsoft para acessar os emails.')
+                ->title('Conecte uma conta Microsoft')
+                ->body('Você precisa conectar pelo menos uma conta Microsoft para acessar os emails.')
                 ->warning()
                 ->persistent()
                 ->send();
@@ -45,69 +50,116 @@ class Inbox extends Page implements HasTable
 
     protected function getHeaderActions(): array
     {
-        return [
+        $connectedAccounts = MicrosoftAccount::whereNotNull('token')->get();
+        $hasConnectedAccounts = $connectedAccounts->count() > 0;
+        
+        $actions = [
             Action::make('connect')
-                ->label('Conectar Microsoft')
+                ->label('Conectar Email')
                 ->icon('heroicon-o-link')
                 ->color('primary')
-                ->visible(fn () => !auth()->user()->isMicrosoftConnected())
                 ->url(route('microsoft.redirect')),
             
             Action::make('sync')
                 ->label('Sincronizar Emails')
                 ->icon('heroicon-o-arrow-path')
                 ->color('success')
-                ->visible(fn () => auth()->user()->isMicrosoftConnected())
+                ->visible($hasConnectedAccounts)
                 ->requiresConfirmation()
-                ->action(function () {
-                    try {
-                        $service = new MicrosoftGraphService(auth()->user());
-                        $synced = $service->syncEmails(50);
-                        
+                ->modalHeading('Sincronizar Emails')
+                ->modalDescription('Isso irá sincronizar emails de todas as contas conectadas.')
+                ->action(function () use ($connectedAccounts) {
+                    $totalSynced = 0;
+                    $errors = [];
+                    
+                    foreach ($connectedAccounts as $account) {
+                        try {
+                            $service = new MicrosoftGraphService($account);
+                            $synced = $service->syncEmails(50);
+                            $totalSynced += $synced;
+                        } catch (\Exception $e) {
+                            $errors[] = "Erro ao sincronizar {$account->email}: " . $e->getMessage();
+                        }
+                    }
+                    
+                    if (empty($errors)) {
                         Notification::make()
                             ->title('Emails sincronizados')
-                            ->body("{$synced} emails foram sincronizados com sucesso.")
+                            ->body("{$totalSynced} emails foram sincronizados com sucesso de " . $connectedAccounts->count() . " conta(s).")
                             ->success()
                             ->send();
-                    } catch (\Exception $e) {
+                    } else {
                         Notification::make()
-                            ->title('Erro ao sincronizar')
-                            ->body($e->getMessage())
-                            ->danger()
+                            ->title('Sincronização parcial')
+                            ->body("{$totalSynced} emails sincronizados. Erros: " . implode('; ', $errors))
+                            ->warning()
                             ->send();
                     }
                 }),
-            
-            Action::make('disconnect')
-                ->label('Desconectar')
+        ];
+        
+        // Add disconnect action for each connected account
+        foreach ($connectedAccounts as $account) {
+            $actions[] = Action::make('disconnect_' . $account->id)
+                ->label('Desconectar ' . $account->email)
                 ->icon('heroicon-o-x-mark')
                 ->color('danger')
-                ->visible(fn () => auth()->user()->isMicrosoftConnected())
                 ->requiresConfirmation()
-                ->action(function () {
-                    auth()->user()->update([
-                        'microsoft_token' => null,
-                        'microsoft_refresh_token' => null,
-                        'microsoft_token_expires_at' => null,
-                    ]);
+                ->modalHeading('Desconectar Conta')
+                ->modalDescription("Tem certeza que deseja desconectar a conta {$account->email}?")
+                ->action(function () use ($account) {
+                    $account->delete();
                     
                     Notification::make()
                         ->title('Conta desconectada')
+                        ->body("A conta {$account->email} foi desconectada com sucesso.")
                         ->success()
                         ->send();
-                }),
-        ];
+                });
+        }
+        
+        return $actions;
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->query(Email::query()->where('user_id', auth()->id())->where('is_archived', false))
+            ->query(Email::query()->whereNotNull('microsoft_account_id'))
             ->columns([
+                TextColumn::make('microsoftAccount.email')
+                    ->label('Conta')
+                    ->sortable()
+                    ->searchable()
+                    ->badge()
+                    ->color('info'),
                 TextColumn::make('from_name')
                     ->label('De')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
+                    ->getStateUsing(function (Email $record): string {
+                        if ($record->is_archived) {
+                            return 'arquivado';
+                        }
+                        if ($record->service_order_id) {
+                            return 'cadastrado';
+                        }
+                        return 'em_aberto';
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'em_aberto' => 'info',
+                        'cadastrado' => 'success',
+                        'arquivado' => 'gray',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'em_aberto' => 'Em Aberto',
+                        'cadastrado' => 'Cadastrado',
+                        'arquivado' => 'Arquivado',
+                        default => $state,
+                    }),
                 TextColumn::make('subject')
                     ->label('Assunto')
                     ->searchable()
@@ -123,7 +175,22 @@ class Inbox extends Page implements HasTable
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->label('Status')
+                    ->options([
+                        'em_aberto' => 'Em Aberto',
+                        'cadastrado' => 'Cadastrado',
+                        'arquivado' => 'Arquivado',
+                    ])
+                    ->default('em_aberto')
+                    ->query(function (Builder $query, array $data) {
+                        return match ($data['value'] ?? 'em_aberto') {
+                            'em_aberto' => $query->where('is_archived', false)->whereNull('service_order_id'),
+                            'cadastrado' => $query->whereNotNull('service_order_id'),
+                            'arquivado' => $query->where('is_archived', true),
+                            default => $query,
+                        };
+                    }),
             ])
             ->actions([
                 TableAction::make('view')

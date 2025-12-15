@@ -12,7 +12,8 @@ class ServiceOrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->hasPermissionTo('view_service_orders') || 
+               $user->hasPermissionTo('view_own_service_orders');
     }
 
     /**
@@ -20,6 +21,14 @@ class ServiceOrderPolicy
      */
     public function view(User $user, ServiceOrder $serviceOrder): bool
     {
+        if ($user->hasPermissionTo('view_service_orders')) {
+            return true;
+        }
+
+        if ($user->hasPermissionTo('view_own_service_orders')) {
+            return $serviceOrder->current_responsible_id === $user->lawyer?->id;
+        }
+
         return false;
     }
 
@@ -28,7 +37,7 @@ class ServiceOrderPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasPermissionTo('create_service_orders');
     }
 
     /**
@@ -36,6 +45,14 @@ class ServiceOrderPolicy
      */
     public function update(User $user, ServiceOrder $serviceOrder): bool
     {
+        if ($user->hasPermissionTo('edit_service_orders')) {
+            return true;
+        }
+
+        if ($user->hasPermissionTo('edit_own_service_orders')) {
+            return $serviceOrder->current_responsible_id === $user->lawyer?->id;
+        }
+
         return false;
     }
 
@@ -44,7 +61,7 @@ class ServiceOrderPolicy
      */
     public function delete(User $user, ServiceOrder $serviceOrder): bool
     {
-        return false;
+        return $user->hasPermissionTo('delete_service_orders');
     }
 
     /**
