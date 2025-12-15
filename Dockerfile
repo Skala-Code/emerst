@@ -151,15 +151,22 @@ RUN chown -R www-data:www-data /var/www/html \
 
 # Create required directories
 RUN mkdir -p storage/logs \
-    && mkdir -p storage/framework/cache \
+    && mkdir -p storage/framework/cache/data \
     && mkdir -p storage/framework/sessions \
     && mkdir -p storage/framework/views \
     && mkdir -p storage/app/temp \
-    && mkdir -p bootstrap/cache
+    && mkdir -p bootstrap/cache \
+    && mkdir -p database
+
+# Create SQLite database file for build process (required for artisan commands)
+RUN touch /var/www/html/database/database.sqlite \
+    && chown www-data:www-data /var/www/html/database/database.sqlite \
+    && chmod 664 /var/www/html/database/database.sqlite
 
 # Clear any existing cache and run composer scripts
-RUN php artisan config:clear || true && \
-    php artisan cache:clear || true && \
+# Using CACHE_STORE=file to avoid database dependency during build
+RUN CACHE_STORE=file php artisan config:clear || true && \
+    CACHE_STORE=file php artisan cache:clear || true && \
     php artisan package:discover --ansi && \
     php artisan vendor:publish --tag=livewire:assets --ansi --no-interaction && \
     php artisan view:clear || true
@@ -174,8 +181,8 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 # Make entrypoint executable
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Optimize Laravel
-RUN php artisan config:cache \
+# Optimize Laravel (using file cache to avoid database dependency during build)
+RUN CACHE_STORE=file php artisan config:cache \
     && php artisan route:cache \
     && php artisan view:cache
 
